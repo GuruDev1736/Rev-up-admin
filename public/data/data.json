@@ -1,0 +1,248 @@
+{
+  "sidebarItems": [
+    { "name": "Dashboard", "icon": "House", "href": "/" },
+    { "name": "Payments", "icon": "CreditCard", "href": "/payments" },
+    { "name": "Manage Bikes", "icon": "Bike", "href": "/products" },
+    { "name": "Add New Bikes", "icon": "Plus", "href": "/products/add" },
+    { "name": "Reports", "icon": "ChartColumnBig", "href": "/reports" },
+    { "name": "Users", "icon": "Users", "href": "/users" },
+    { "name": "Orders", "icon": "FileText", "href": "/orders" }, 
+    { "name": "Maintenance", "icon": "Wrench", "href": "/maintenance" },
+    { "name": "Settings", "icon": "Settings", "href": "/settings" },
+    { "name": "Help & Support", "icon": "BadgeQuestionMark", "href": "/help" }
+  ],
+   
+  "sales": [
+    { "name": "Jan", "sales": 400 },
+    { "name": "Feb", "sales": 350 },
+    { "name": "Mar", "sales": 500 },
+    { "name": "Apr", "sales": 420 },
+    { "name": "May", "sales": 600 },
+    { "name": "Jun", "sales": 750 },
+    { "name": "Jul", "sales": 680 },
+    { "name": "Aug", "sales": 720 },
+    { "name": "Sep", "sales": 640 },
+    { "name": "Oct", "sales": 800 },
+    { "name": "Nov", "sales": 950 },
+    { "name": "Dec", "sales": 1100 }
+  ],
+  "categories": [
+    { "name": "Scooters", "value": 300 },
+    { "name": "Bikes", "value": 500 },
+    { "name": "E-Bikes", "value": 200 },
+    { "name": "Cruisers", "value": 150 },
+    { "name": "Sports", "value": 250 }
+  ],
+  "orderstatus":[
+     { "name": "Processing", "value": 18 },
+     { "name": "Celed", "value": 12 },
+     { "name": "Pending", "value": 24 },
+     { "name": "Delivered", "value": 47 }     
+  ],
+  "productPerformanceData": [
+    { "name": "Jan", "Retention": 200, "Profit": 400, "Revenue": 600 },
+    { "name": "Feb", "Retention": 250, "Profit": 450, "Revenue": 700 },
+    { "name": "Mar", "Retention": 300, "Profit": 500, "Revenue": 800 },
+    { "name": "Apr", "Retention": 280, "Profit": 480, "Revenue": 750 },
+    { "name": "May", "Retention": 350, "Profit": 520, "Revenue": 850 },
+    { "name": "Jun", "Retention": 400, "Profit": 550, "Revenue": 900 },
+    { "name": "Jul", "Retention": 370, "Profit": 530, "Revenue": 870 },
+    { "name": "Aug", "Retention": 420, "Profit": 580, "Revenue": 950 },
+    { "name": "Sep", "Retention": 390, "Profit": 560, "Revenue": 920 },
+    { "name": "Oct", "Retention": 450, "Profit": 600, "Revenue": 1000 },
+    { "name": "Nov", "Retention": 480, "Profit": 650, "Revenue": 1100 },
+    { "name": "Dec", "Retention": 500, "Profit": 700, "Revenue": 1200 }
+  ],
+
+  "productData" :[
+    {
+      "id": "B001",
+      "name": "Royal Enfield Classic 350",
+      "category": "Cruiser",
+      "price": 25.0, 
+      "stock": 5, 
+      "sales": 120, 
+      "image": "/images/classic350.jpg",
+      "title": "Royal Enfield Classic 350"
+    },
+    {
+      "id": "B002",
+      "name": "Honda Activa 6G",
+      "category": "Scooter",
+      "price": 10.0,
+      "stock": 12,
+      "sales": 300,
+      "image": "/images/activa.jpg",
+      "title": "Honda Activa 6G"
+    },
+    {
+      "id": "B003",
+      "name": "Bajaj Pulsar 150",
+      "category": "Sports",
+      "price": 15.0,
+      "stock": 7,
+      "sales": 180,
+      "image": "/images/pulsar150.jpg",
+      "title": "Bajaj Pulsar 150"
+    },
+    {
+      "id": "B004",
+      "name": "KTM Duke 200",
+      "category": "Sports",
+      "price": 20.0,
+      "stock": 4,
+      "sales": 95,
+      "image": "/images/duke200.jpg",
+      "title": "KTM Duke 200"
+    },
+    {
+      "id": "B005",
+      "name": "Yamaha R15 V4",
+      "category": "Sports",
+      "price": 22.0,
+      "stock": 3,
+      "sales": 60,
+      "image": "/images/r15.jpg",
+      "title": "Yamaha R15 V4"
+    }
+  ],
+  "clientsData" :[
+      {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "phoneNumber": "+91 9876543210",
+        "location": "Pune, India",
+        "image": "/users/john.jpg"
+      },
+      {
+        "id": 2,
+        "name": "Jane Smith",
+        "email": "jane.smith@example.com",
+        "phoneNumber": "+91 9988776655",
+        "location": "Mumbai, India",
+        "image": "/users/jane.jpg"
+      },
+      {
+        "id": 3,
+        "name": "Rahul Sharma",
+        "email": "rahul.sharma@example.com",
+        "phoneNumber": "+91 9123456789",
+        "location": "Delhi, India",
+        "image": "/users/rahul.jpg"
+      },
+      {
+        "id": 4,
+        "name": "Emily Johnson",
+        "email": "emily.johnson@example.com",
+        "phoneNumber": "+91 9876501234",
+        "location": "Bengaluru, India",
+        "image": "/users/emily.jpg"
+      },
+      {
+        "id": 5,
+        "name": "Amit Patel",
+        "email": "amit.patel@example.com",
+        "phoneNumber": "+91 9001234567",
+        "location": "Ahmedabad, India",
+        "image": "/users/amit.jpg"
+      }
+    ],
+    
+    "orderData": [
+      {
+        "id": "ORD001",
+        "client": "John Doe",
+        "email": "john@example.com",
+        "total": 120.5,
+        "status": "Delivered",
+        "date": "2025-09-10",
+        "location": "Pune, India"
+      },
+      {
+        "id": "ORD002",
+        "client": "Jane Smith",
+        "email": "jane@example.com",
+        "total": 75.0,
+        "status": "Pending",
+        "date": "2025-09-12",
+        "location": "Mumbai, India"
+      },
+      {
+        "id": "ORD003",
+        "client": "Raj Patel",
+        "email": "raj.patel@example.com",
+        "total": 210.99,
+        "status": "Cancelled",
+        "date": "2025-09-14",
+        "location": "Ahmedabad, India"
+      },
+      {
+        "id": "ORD004",
+        "client": "Emily Johnson",
+        "email": "emily.j@example.com",
+        "total": 340.0,
+        "status": "Delivered",
+        "date": "2025-09-15",
+        "location": "Delhi, India"
+      },
+      {
+        "id": "ORD005",
+        "client": "Michael Brown",
+        "email": "michael.b@example.com",
+        "total": 89.75,
+        "status": "Pending",
+        "date": "2025-09-16",
+        "location": "Chennai, India"
+      },
+      {
+        "id": "ORD006",
+        "client": "Sophia Williams",
+        "email": "sophia.w@example.com",
+        "total": 459.99,
+        "status": "Delivered",
+        "date": "2025-09-17",
+        "location": "Hyderabad, India"
+      },
+      {
+        "id": "ORD007",
+        "client": "David Lee",
+        "email": "david.lee@example.com",
+        "total": 152.0,
+        "status": "Cancelled",
+        "date": "2025-09-18",
+        "location": "Bangalore, India"
+      },
+      {
+        "id": "ORD008",
+        "client": "Aarav Sharma",
+        "email": "aarav.sharma@example.com",
+        "total": 199.5,
+        "status": "Delivered",
+        "date": "2025-09-19",
+        "location": "Nagpur, India"
+      },
+      {
+        "id": "ORD009",
+        "client": "Olivia Davis",
+        "email": "olivia.d@example.com",
+        "total": 305.25,
+        "status": "Pending",
+        "date": "2025-09-20",
+        "location": "Kolkata, India"
+      },
+      {
+        "id": "ORD010",
+        "client": "Liam Wilson",
+        "email": "liam.w@example.com",
+        "total": 124.0,
+        "status": "Delivered",
+        "date": "2025-09-21",
+        "location": "Jaipur, India"
+      }
+    ]
+      
+}
+
+
+
