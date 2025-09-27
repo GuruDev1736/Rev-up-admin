@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "admin",
   "version": "0.1.0",
   "private": true,
@@ -27,5 +28,13 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
     "tailwindcss": "^4"
+=======
+  "dependencies": {
+    "framer-motion": "^12.23.13",
+    "lucide-react": "^0.544.0",
+    "react-icons": "^5.5.0",
+    "rechart": "^0.0.1",
+    "swiper": "^11.2.10"
+>>>>>>> 8b57fa63c9635a9a735eda3b8d8eca6fc17474c4
   }
 }
