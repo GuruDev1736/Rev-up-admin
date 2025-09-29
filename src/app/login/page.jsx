@@ -2,34 +2,32 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react"; // for password toggle
+import Link from "next/link";
+import { loginUser } from "../api/auth/auth";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setErrorMsg(null);
 
     try {
-      const res = await fetch("https://api.revupbikes.com/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
+      const data = await loginUser({ email, password });
       if (data.STS === "200") {
-        localStorage.setItem("token", data.CONTENT.token);
-        router.push("/dashboard");
+        localStorage.setItem("token", data.token);
+        router.push("/");
       } else {
-        alert(data.MSG);
+        setErrorMsg("Invalid credentials, please try again.");
       }
     } catch (error) {
-      console.error(error);
-      alert("Login failed");
+      setErrorMsg(error.message || "Something went wrong");
     }
   };
 
@@ -59,7 +57,7 @@ export default function LoginPage() {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-black outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-black outline-none text-black"
               />
             </div>
 
@@ -70,14 +68,14 @@ export default function LoginPage() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-black outline-none pr-12"
+                className="w-full px-4 py-3 rounded-xl border bg border-gray-300 focus:ring-2 focus:ring-black outline-none pr-12 text-black"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-3 flex items-center text-gray-500"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size= {20} /> : <Eye size={20} />}
               </button>
             </div>
 
@@ -97,13 +95,18 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Footer */}
-          <p className="text-sm text-gray-500 mt-6 text-center">
+          {/* Already have an account */}
+          <p className="text-sm text-center mt-6 text-black">
             Don’t have an account?
-            <a href="#" className="font-semibold text-black hover:underline">
+            <Link href="/register" className="text-blue-600 hover:underline">
               Sign Up
-            </a>
+            </Link>
           </p>
+
+          {/* Error Message */}
+          {errorMsg && (
+            <p className="text-red-600 text-sm text-center">{errorMsg}</p>
+          )}
         </div>
 
         {/* RIGHT SIDE (Illustration + Text) */}
