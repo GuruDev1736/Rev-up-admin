@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { registerUser } from "../api/auth/auth";
+import { registerUser } from "@/services/api";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function Register() {

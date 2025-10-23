@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react"; // for password toggle
 import Link from "next/link";
-import { loginUser } from "../api/auth/auth";
+import { loginUser } from "@/services/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,31 +21,47 @@ export default function LoginPage() {
     try {
       const data = await loginUser({ email, password });
       if (data.STS === "200") {
-        localStorage.setItem("token", data.token);
-        router.push("/");
+        // Check if user has ROLE_MASTER_ADMIN
+        if (data.CONTENT && data.CONTENT.userRole === "ROLE_MASTER_ADMIN") {
+          // Store authentication data
+          localStorage.setItem("token", data.CONTENT.token);
+          localStorage.setItem("userId", data.CONTENT.userId);
+          localStorage.setItem("userName", data.CONTENT.userName);
+          localStorage.setItem("fullName", data.CONTENT.fullName);
+          localStorage.setItem("userRole", data.CONTENT.userRole);
+          localStorage.setItem("userProfilePic", data.CONTENT.userProfilePic);
+          
+          router.push("/overview");
+        } else {
+          setErrorMsg("Access Denied. Only Master Admin can access this dashboard.");
+        }
       } else {
         setErrorMsg("Invalid credentials, please try again.");
       }
     } catch (error) {
       setErrorMsg(error.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-      <div className="flex w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-[#fffafa]">
+      <div className="flex w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
         {/* LEFT SIDE (Form) */}
-        <div className="w-full md:w-1/2 p-10 flex flex-col justify-center">
+        <div className="w-full md:w-1/2 p-10 flex flex-col justify-center bg-white">
           {/* Logo */}
           <div className="flex items-center space-x-2 mb-10">
-            <div className="w-8 h-8 bg-black rounded-full"></div>
-            <span className="font-bold text-lg">RevUp Admin</span>
+            <div className="w-10 h-10 bg-gradient-to-r from-[#f02521] to-[#f85d5d] rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-xl">R</span>
+            </div>
+            <span className="font-bold text-xl text-gray-900">RevUp Admin</span>
           </div>
 
           <h2 className="text-3xl font-bold text-gray-900 mb-2 text-left">
             Welcome Back 👋
           </h2>
-          <p className="text-gray-500 mb-8 text-left">
+          <p className="text-gray-600 mb-8 text-left">
             Login to access your admin dashboard
           </p>
 
@@ -57,7 +73,8 @@ export default function LoginPage() {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-black outline-none text-black"
+                required
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#f02521] focus:border-[#f02521] outline-none text-gray-900 transition-all"
               />
             </div>
 
@@ -68,61 +85,76 @@ export default function LoginPage() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border bg border-gray-300 focus:ring-2 focus:ring-black outline-none pr-12 text-black"
+                required
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#f02521] focus:border-[#f02521] outline-none pr-12 text-gray-900 transition-all"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-[#f02521] transition-colors"
               >
-                {showPassword ? <EyeOff size= {20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
 
             {/* Forget password */}
             <div className="text-right">
-              <a href="#" className="text-sm text-gray-600 hover:text-black">
+              <Link href="/forgot-password" className="text-sm text-gray-600 hover:text-[#f02521] transition-colors">
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             {/* Sign in button */}
             <button
               type="submit"
-              className="w-full bg-black text-white py-3 rounded-xl font-semibold hover:bg-gray-800 transition"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-[#f02521] to-[#f85d5d] text-white py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign in
+              {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
 
-          {/* Already have an account */}
-          <p className="text-sm text-center mt-6 text-black">
-            Don’t have an account?
-            <Link href="/register" className="text-blue-600 hover:underline">
-              Sign Up
-            </Link>
-          </p>
-
           {/* Error Message */}
           {errorMsg && (
-            <p className="text-red-600 text-sm text-center">{errorMsg}</p>
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm text-center">{errorMsg}</p>
+            </div>
           )}
         </div>
 
         {/* RIGHT SIDE (Illustration + Text) */}
-        <div className="hidden md:flex w-1/2 bg-gray-900 text-white items-center justify-center relative p-8">
+        <div className="hidden md:flex w-1/2 bg-gradient-to-br from-[#f02521] to-[#f85d5d] text-white items-center justify-center relative p-8">
           <div className="text-center">
-            <img
-              src="/login-illustration.png" // replace with your illustration
-              alt="Illustration"
-              className="mx-auto mb-6"
-            />
-            <h3 className="text-xl font-semibold mb-2">
-              Manage your Business Anywhere
+            <div className="mb-8">
+              {/* Bike Icon/Illustration */}
+              <div className="w-48 h-48 mx-auto bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
+                <svg
+                  className="w-32 h-32 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold mb-3">
+              Manage Your Business Anywhere
             </h3>
-            <p className="text-gray-400 text-sm">
-              You can manage your admin dashboard on the go with RevUp Bikes
+            <p className="text-white/90 text-base leading-relaxed max-w-sm mx-auto">
+              Access your RevUp Bikes admin dashboard on the go. Monitor sales, manage inventory, and track orders seamlessly.
             </p>
+            <div className="mt-8 flex justify-center space-x-2">
+              <div className="w-2 h-2 bg-white rounded-full"></div>
+              <div className="w-2 h-2 bg-white/50 rounded-full"></div>
+              <div className="w-2 h-2 bg-white/50 rounded-full"></div>
+            </div>
           </div>
         </div>
       </div>

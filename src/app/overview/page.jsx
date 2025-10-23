@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import StatCard from "../components/StatCard";
 import { motion } from "framer-motion";
 
@@ -11,6 +13,19 @@ import { ProductPerformanceChart } from "../components/ProductPerformanceChart";
 import AlertCard from "../components/AlertCard";
 
 const OverviewPage = () => {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userRole = localStorage.getItem("userRole");
+    
+    if (!token || userRole !== "ROLE_MASTER_ADMIN") {
+      // Clear session and redirect to login
+      localStorage.clear();
+      router.push("/login");
+    }
+  }, [router]);
+
   return (
     <div className="flex-1 overflow-hidden relative z-10">
       <main className="max-w-full mx-auto p-4 sm:px-6 lg:px-8">
