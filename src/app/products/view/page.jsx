@@ -1,7 +1,9 @@
 import React from 'react'
 
-export const page = () => {
+const ViewPage = () => {
   return (
     <div>page</div>
   )
 }
+
+export default ViewPage;
