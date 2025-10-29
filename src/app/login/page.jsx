@@ -23,13 +23,14 @@ export default function LoginPage() {
       if (data.STS === "200") {
         // Check if user has ROLE_MASTER_ADMIN
         if (data.CONTENT && data.CONTENT.userRole === "ROLE_MASTER_ADMIN") {
-          // Store authentication data
-          localStorage.setItem("token", data.CONTENT.token);
-          localStorage.setItem("userId", data.CONTENT.userId);
-          localStorage.setItem("userName", data.CONTENT.userName);
-          localStorage.setItem("fullName", data.CONTENT.fullName);
-          localStorage.setItem("userRole", data.CONTENT.userRole);
-          localStorage.setItem("userProfilePic", data.CONTENT.userProfilePic);
+          // Store authentication data in sessionStorage for better security
+          // Session will be cleared when browser/tab is closed
+          sessionStorage.setItem("token", data.CONTENT.token);
+          sessionStorage.setItem("userId", data.CONTENT.userId);
+          sessionStorage.setItem("userName", data.CONTENT.userName);
+          sessionStorage.setItem("fullName", data.CONTENT.fullName);
+          sessionStorage.setItem("userRole", data.CONTENT.userRole);
+          sessionStorage.setItem("userProfilePic", data.CONTENT.userProfilePic);
           
           router.push("/overview");
         } else {

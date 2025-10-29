@@ -14,8 +14,8 @@ const Header = () => {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    const storedName = localStorage.getItem("fullName");
-    const storedEmail = localStorage.getItem("userName");
+    const storedName = sessionStorage.getItem("fullName");
+    const storedEmail = sessionStorage.getItem("userName");
     if (storedName) {
       setFullName(storedName);
     }
@@ -39,7 +39,7 @@ const Header = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.clear();
+    sessionStorage.clear();
     router.push("/login");
   };
 

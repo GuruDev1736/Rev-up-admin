@@ -16,12 +16,12 @@ const OverviewPage = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userRole = localStorage.getItem("userRole");
+    const token = sessionStorage.getItem("token");
+    const userRole = sessionStorage.getItem("userRole");
     
     if (!token || userRole !== "ROLE_MASTER_ADMIN") {
       // Clear session and redirect to login
-      localStorage.clear();
+      sessionStorage.clear();
       router.push("/login");
     }
   }, [router]);

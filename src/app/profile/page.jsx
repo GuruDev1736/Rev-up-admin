@@ -28,23 +28,23 @@ export default function ProfilePage() {
     email: "",
   });
 
-  // Load profile data from localStorage
+  // Load profile data from sessionStorage
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userRole = localStorage.getItem("userRole");
+    const token = sessionStorage.getItem("token");
+    const userRole = sessionStorage.getItem("userRole");
 
     if (!token || userRole !== "ROLE_MASTER_ADMIN") {
-      localStorage.clear();
+      sessionStorage.clear();
       router.push("/login");
       return;
     }
 
     // Load user data
-    const fullName = localStorage.getItem("fullName") || "Admin";
-    const email = localStorage.getItem("userName") || "";
-    const userId = localStorage.getItem("userId") || "";
-    const role = localStorage.getItem("userRole") || "";
-    const profilePic = localStorage.getItem("userProfilePic") || "";
+    const fullName = sessionStorage.getItem("fullName") || "Admin";
+    const email = sessionStorage.getItem("userName") || "";
+    const userId = sessionStorage.getItem("userId") || "";
+    const role = sessionStorage.getItem("userRole") || "";
+    const profilePic = sessionStorage.getItem("userProfilePic") || "";
 
     const userData = {
       fullName,
@@ -83,9 +83,9 @@ export default function ProfilePage() {
     setSuccessMsg(null);
 
     try {
-      // Update localStorage with new data
-      localStorage.setItem("fullName", editData.fullName);
-      localStorage.setItem("userName", editData.email);
+      // Update sessionStorage with new data
+      sessionStorage.setItem("fullName", editData.fullName);
+      sessionStorage.setItem("userName", editData.email);
 
       // Update profile data state
       setProfileData({

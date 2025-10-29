@@ -13,6 +13,7 @@ import {
   Plus,
   ChartColumnBig,
   BadgeQuestionMark,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -40,7 +41,8 @@ const Sidebar = () => {
   useEffect(() => {
     fetch("/data/data.json")
       .then((res) => res.json())
-      .then((data) => setSidebarItems(data.sidebarItems));
+      .then((data) => setSidebarItems(data.sidebarItems))
+      .catch((error) => console.error("Error loading sidebar data:", error));
   }, []);
 
   return (
@@ -48,67 +50,89 @@ const Sidebar = () => {
       {/* Mobile Toggle Button */}
       <button
         onClick={() => setIsSidebarOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-[#1e1e1e] text-white hover:bg-[#2f2f2f]"
+        className="md:hidden fixed top-4 left-4 z-50 p-3 rounded-xl bg-gradient-to-r from-[#f02521] to-[#f85d5d] text-white shadow-lg hover:shadow-xl transition-all"
       >
         <Menu size={24} />
       </button>
 
       {/* Sidebar */}
       <div
-        className={`fixed md:static top-0 left-0 h-full bg-[#fff] border-r border-[#2f2f2f] backdrop-blur-md transition-all duration-300 ease-in-out z-40
+        className={`fixed md:static top-0 left-0 h-full bg-white border-r border-gray-200 shadow-lg transition-all duration-300 ease-in-out z-40
         ${
           isSidebarOpen
             ? "translate-x-0 w-64"
-            : "-translate-x-full md:translate-x-0 md:w-20"
+            : "-translate-x-full md:translate-x-0 md:w-64"
         }
         flex-shrink-0`}
       >
-        <div className="p-4 flex flex-col h-full">
-          {/* Close button for mobile */}
-          <button
-            onClick={() => setIsSidebarOpen(false)}
-            className="p-2 rounded-full hover:bg-[#2f2f2f] text-[#2f2f2f] hover:text-white transition-colors max-w-fit cursor-pointer md:hidden"
-          >
-            ✕
-          </button>
+        <div className="flex flex-col h-full">
+          {/* Logo Section */}
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-[#f02521] to-[#f85d5d] rounded-lg flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-bold text-xl">R</span>
+              </div>
+              <div
+                className={`${
+                  isSidebarOpen ? "block" : "hidden"
+                } transition-all`}
+              >
+                <h2 className="text-lg font-bold text-gray-900">RevUp</h2>
+                <p className="text-xs text-gray-500">Admin Panel</p>
+              </div>
+            </div>
 
-          {/* Collapse button (only desktop) */}
-          <button
-            onClick={() => setIsSidebarOpen((prev) => !prev)}
-            className="p-2 rounded-full hover:bg-[#2f2f2f] text-[#2f2f2f] hover:text-white transition-colors max-w-fit cursor-pointer hidden md:block"
-          >
-            <Menu size={24} />
-          </button>
+            {/* Close button for mobile */}
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors md:hidden"
+            >
+              <X size={20} />
+            </button>
+          </div>
 
           {/* Sidebar Nav */}
-          <nav className="mt-8 flex-grow">
-            {sidebarItems.map((item) => {
-              const IconComponent = ICONS[item.icon];
-              return (
-                <Link key={item.name} href={item.href}>
-                  <div
-                    className={`flex items-center p-4 text-sm text-[#2f2f2f] rounded-lg font-medium hover:bg-[#2f2f2f] hover:text-white transition-colors mb-2 ${
-                      pathname === item.href ? "bg-[#2f2f2f] text-white" : ""
-                    }`}
-                  >
-                    <IconComponent size={20} />
-                    {/* Show text only when expanded */}
-                    <span
-                      className={`ml-4 whitespace-nowrap ${
-                        isSidebarOpen ||
-                        (typeof window !== "undefined" &&
-                          window.innerWidth < 768)
-                          ? "block"
-                          : "hidden"
-                      }`}
+          <nav className="flex-1 overflow-y-auto py-6 px-3">
+            <div className="space-y-1">
+              {sidebarItems.map((item) => {
+                const IconComponent = ICONS[item.icon];
+                const isActive = pathname === item.href;
+                
+                return (
+                  <Link key={item.name} href={item.href}>
+                    <div
+                      className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all group relative
+                        ${
+                          isActive
+                            ? "bg-gradient-to-r from-[#f02521] to-[#f85d5d] text-white shadow-md"
+                            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        }
+                      `}
                     >
-                      {item.name}
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
+                      <IconComponent
+                        size={20}
+                        className={`flex-shrink-0 ${
+                          isActive ? "text-white" : "text-gray-500 group-hover:text-[#f02521]"
+                        } transition-colors`}
+                      />
+                      
+                      {/* Text - always shown */}
+                      <span className="ml-4 whitespace-nowrap">
+                        {item.name}
+                      </span>
+
+                      {/* Active Indicator */}
+                      {isActive && (
+                        <div className="absolute right-2 w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           </nav>
+
+          {/* Collapse button removed since we always show names */}
         </div>
       </div>
 
@@ -116,7 +140,7 @@ const Sidebar = () => {
       {isSidebarOpen && (
         <div
           onClick={() => setIsSidebarOpen(false)}
-          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 md:hidden animate-fadeIn"
         ></div>
       )}
     </>

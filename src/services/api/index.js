@@ -3,6 +3,10 @@
 export * from "./authService";
 export * from "./forgotPasswordService";
 export * from "./profileService";
+export * from "./bikesService";
+export * from "./placesService";
+export * from "./uploadService";
+export * from "./apiHelpers";
 
 // API Configuration
 export const API_CONFIG = {

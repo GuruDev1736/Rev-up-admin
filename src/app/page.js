@@ -6,8 +6,8 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userRole = localStorage.getItem("userRole");
+    const token = sessionStorage.getItem("token");
+    const userRole = sessionStorage.getItem("userRole");
     
     if (token && userRole === "ROLE_MASTER_ADMIN") {
       // If user is logged in with correct role, redirect to dashboard
@@ -16,7 +16,7 @@ export default function Home() {
       // If not logged in or wrong role, redirect to login page
       if (token) {
         // Clear invalid session
-        localStorage.clear();
+        sessionStorage.clear();
       }
       router.push("/login");
     }
