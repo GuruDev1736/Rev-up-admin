@@ -14,26 +14,26 @@ import {
   ChartColumnBig,
   BadgeQuestionMark,
   X,
+  MapPin,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const ICONS = {
-  House,
-  CreditCard,
-  Settings,
-  Wrench,
-  Bell,
-  Users,
-  FileText,
-  Bike,
-  Plus,
-  ChartColumnBig,
-  BadgeQuestionMark,
-};
-
-const Sidebar = () => {
+  const ICONS = {
+    House,
+    CreditCard,
+    Settings,
+    Wrench,
+    Bell,
+    Users,
+    FileText,
+    Bike,
+    Plus,
+    ChartColumnBig,
+    BadgeQuestionMark,
+    MapPin,
+  };const Sidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarItems, setSidebarItems] = useState([]);
   const pathname = usePathname();

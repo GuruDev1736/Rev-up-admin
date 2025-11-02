@@ -184,7 +184,7 @@ export default function ForgotPasswordPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#f02521] focus:border-[#f02521] outline-none text-gray-900 transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#f02521] focus:border-[#f02521] outline-none text-gray-900 transition-all placeholder:text-gray-400"
                 />
               </div>
 
@@ -222,7 +222,7 @@ export default function ForgotPasswordPage() {
                   onChange={(e) => setOtp(e.target.value)}
                   required
                   maxLength={4}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#f02521] focus:border-[#f02521] outline-none text-gray-900 transition-all text-center text-2xl tracking-widest"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#f02521] focus:border-[#f02521] outline-none text-gray-900 transition-all text-center text-2xl tracking-widest placeholder:text-gray-400"
                 />
               </div>
 
@@ -267,7 +267,7 @@ export default function ForgotPasswordPage() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#f02521] focus:border-[#f02521] outline-none text-gray-900 transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#f02521] focus:border-[#f02521] outline-none text-gray-900 transition-all placeholder:text-gray-400"
                 />
               </div>
 
@@ -282,7 +282,7 @@ export default function ForgotPasswordPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#f02521] focus:border-[#f02521] outline-none text-gray-900 transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#f02521] focus:border-[#f02521] outline-none text-gray-900 transition-all placeholder:text-gray-400"
                 />
               </div>
 

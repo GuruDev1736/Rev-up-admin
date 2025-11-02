@@ -37,31 +37,19 @@ export const uploadImage = async (file, fileName) => {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify({
-        fileName: fileName,
+        fileName: fileName || file.name,
         fileData: base64Data,
         userId: userId,
       }),
     });
 
     const data = await response.json();
-
-    if (response.ok && data.STS === "200") {
-      return {
-        success: true,
-        imageUrl: data.CONTENT,
-        message: data.MSG,
-      };
-    } else {
-      return {
-        success: false,
-        message: data.MSG || "Failed to upload image",
-      };
-    }
+    return data;
   } catch (error) {
     console.error("Error uploading image:", error);
     return {
-      success: false,
-      message: error.message || "An error occurred while uploading image",
+      STS: "400",
+      MSG: error.message || "An error occurred while uploading image",
     };
   }
 };

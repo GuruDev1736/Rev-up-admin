@@ -246,7 +246,7 @@ export default function ProfilePage() {
                     onChange={(e) =>
                       setEditData({ ...editData, fullName: e.target.value })
                     }
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:ring-2 focus:ring-[#f02521] focus:border-[#f02521] outline-none text-gray-900 transition-all bg-white"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:ring-2 focus:ring-[#f02521] focus:border-[#f02521] outline-none text-gray-900 transition-all bg-white placeholder:text-gray-400"
                     placeholder="Enter your full name"
                   />
                 ) : (
@@ -269,7 +269,7 @@ export default function ProfilePage() {
                     onChange={(e) =>
                       setEditData({ ...editData, email: e.target.value })
                     }
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:ring-2 focus:ring-[#f02521] focus:border-[#f02521] outline-none text-gray-900 transition-all bg-white"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:ring-2 focus:ring-[#f02521] focus:border-[#f02521] outline-none text-gray-900 transition-all bg-white placeholder:text-gray-400"
                     placeholder="Enter your email"
                   />
                 ) : (
