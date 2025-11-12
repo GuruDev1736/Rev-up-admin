@@ -1,8 +1,7 @@
 // Bikes Service - API functions for bike management
 
 import { getAuthHeaders } from "./apiHelpers";
-
-const API_BASE_URL = "https://api.revupbikes.com/api";
+import { API_BASE_URL } from "@/config/apiConfig";
 
 /**
  * Get all bikes

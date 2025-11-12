@@ -4,132 +4,104 @@ import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
+  Edit,
   Trash2,
-  User,
+  Image as ImageIcon,
   ChevronLeft,
   ChevronRight,
-  Edit,
-  KeyRound,
 } from "lucide-react";
-import { deleteUser } from "@/services/api/usersService";
+import { useRouter } from "next/navigation";
+import { deleteBanner } from "@/services/api/bannersService";
 import ConfirmDialog from "./ConfirmDialog";
 import MessageDialog from "./MessageDialog";
-import EditUserDialog from "./EditUserDialog";
-import ChangePasswordDialog from "./ChangePasswordDialog";
 
-export const UsersTable = ({ initialUsers, loading, onUsersUpdate }) => {
-  const [users, setUsers] = useState(initialUsers);
+export default function BannersTable({ initialBanners, loading, onBannersUpdate }) {
+  const router = useRouter();
+  const [banners, setBanners] = useState(initialBanners);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showMessageDialog, setShowMessageDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [messageType, setMessageType] = useState("success");
   const [messageText, setMessageText] = useState("");
-  const [userToDelete, setUserToDelete] = useState(null);
-  const [userToEdit, setUserToEdit] = useState(null);
+  const [bannerToDelete, setBannerToDelete] = useState(null);
   const itemsPerPage = 20;
 
   useEffect(() => {
-    setUsers(initialUsers);
-  }, [initialUsers]);
+    setBanners(initialBanners);
+  }, [initialBanners]);
 
   // Search filtering
-  const filteredUsers = useMemo(() => {
-    let filtered = [...users];
+  const filteredBanners = useMemo(() => {
+    let filtered = [...banners];
 
     // Search filter
     if (searchQuery) {
-      filtered = filtered.filter((user) => {
+      filtered = filtered.filter((banner) => {
         const searchLower = searchQuery.toLowerCase();
         return (
-          user.firstName?.toLowerCase().includes(searchLower) ||
-          user.lastName?.toLowerCase().includes(searchLower) ||
-          user.email?.toLowerCase().includes(searchLower) ||
-          user.phoneNumber?.toLowerCase().includes(searchLower)
+          banner.bannerTitle?.toLowerCase().includes(searchLower) ||
+          banner.bannerDescription?.toLowerCase().includes(searchLower) ||
+          banner.navigationLink?.toLowerCase().includes(searchLower)
         );
       });
     }
 
     return filtered;
-  }, [users, searchQuery]);
+  }, [banners, searchQuery]);
 
   // Pagination
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredBanners.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentUsers = filteredUsers.slice(startIndex, endIndex);
+  const currentBanners = filteredBanners.slice(startIndex, endIndex);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
 
-  const handleDeleteClick = (user) => {
-    setUserToDelete(user);
+  const handleEdit = (bannerId) => {
+    router.push(`/banners/${bannerId}`);
+  };
+
+  const handleDeleteClick = (banner) => {
+    setBannerToDelete(banner);
     setShowConfirmDialog(true);
-  };
-
-  const handleEditClick = (user) => {
-    setUserToEdit(user);
-    setShowEditDialog(true);
-  };
-
-  const handlePasswordClick = (user) => {
-    setUserToEdit(user);
-    setShowPasswordDialog(true);
-  };
-
-  const handleEditSuccess = (message) => {
-    setMessageType("success");
-    setMessageText(message);
-    setShowMessageDialog(true);
-    
-    // Refresh users list
-    if (onUsersUpdate) {
-      onUsersUpdate();
-    }
-  };
-
-  const handlePasswordSuccess = (message) => {
-    setMessageType("success");
-    setMessageText(message);
-    setShowMessageDialog(true);
   };
 
   const handleDeleteConfirm = async () => {
     setShowConfirmDialog(false);
     
     try {
-      const response = await deleteUser(userToDelete.id);
+      const response = await deleteBanner(bannerToDelete.id);
       
       if (response.STS === "200") {
         setMessageType("success");
-        setMessageText(response.MSG || "User deleted successfully!");
+        setMessageText(response.MSG || "Banner deleted successfully!");
         setShowMessageDialog(true);
         
-        // Refresh users list
-        if (onUsersUpdate) {
-          onUsersUpdate();
+        // Refresh banners list
+        if (onBannersUpdate) {
+          onBannersUpdate();
         }
       } else {
         setMessageType("error");
-        setMessageText(response.MSG || "Failed to delete user");
+        setMessageText(response.MSG || "Failed to delete banner");
         setShowMessageDialog(true);
       }
     } catch (error) {
       setMessageType("error");
-      setMessageText("Error deleting user. Please try again.");
+      setMessageText("Error deleting banner. Please try again.");
       setShowMessageDialog(true);
     }
     
-    setUserToDelete(null);
+    setBannerToDelete(null);
   };
 
   const handleDeleteCancel = () => {
     setShowConfirmDialog(false);
-    setUserToDelete(null);
+    setBannerToDelete(null);
   };
 
   const handleMessageClose = () => {
@@ -206,7 +178,7 @@ export const UsersTable = ({ initialUsers, loading, onUsersUpdate }) => {
               />
               <input
                 type="text"
-                placeholder="Search users..."
+                placeholder="Search banners..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#f02521] focus:border-transparent text-gray-900 placeholder:text-gray-400"
@@ -216,8 +188,8 @@ export const UsersTable = ({ initialUsers, loading, onUsersUpdate }) => {
 
           {/* Results count */}
           <div className="mt-4 text-sm text-gray-600">
-            Showing {startIndex + 1}-{Math.min(endIndex, filteredUsers.length)} of{" "}
-            {filteredUsers.length} users
+            Showing {startIndex + 1}-{Math.min(endIndex, filteredBanners.length)} of{" "}
+            {filteredBanners.length} banners
           </div>
         </div>
 
@@ -227,16 +199,16 @@ export const UsersTable = ({ initialUsers, loading, onUsersUpdate }) => {
             <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Profile
+                  Image
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Name
+                  Title
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Email
+                  Description
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Phone Number
+                  Navigation Link
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Created At
@@ -248,17 +220,17 @@ export const UsersTable = ({ initialUsers, loading, onUsersUpdate }) => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               <AnimatePresence>
-                {currentUsers.length === 0 ? (
+                {currentBanners.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="px-6 py-12 text-center">
-                      <User className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                      <p className="text-gray-500 text-lg">No users found</p>
+                      <ImageIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                      <p className="text-gray-500 text-lg">No banners found</p>
                     </td>
                   </tr>
                 ) : (
-                  currentUsers.map((user, index) => (
+                  currentBanners.map((banner, index) => (
                     <motion.tr
-                      key={user.id}
+                      key={banner.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
@@ -266,39 +238,33 @@ export const UsersTable = ({ initialUsers, loading, onUsersUpdate }) => {
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-4">
-                        {user.profilePicture ? (
-                          <img
-                            src={user.profilePicture}
-                            alt={`${user.firstName} ${user.lastName}`}
-                            className="w-12 h-12 rounded-full object-cover"
-                            onError={(e) => {
-                              e.target.src = "https://via.placeholder.com/150";
-                            }}
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#f02521] to-[#f85d5d] flex items-center justify-center text-white font-semibold">
-                            {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
-                          </div>
-                        )}
+                        <img
+                          src={banner.bannerImage}
+                          alt={banner.bannerTitle}
+                          className="w-20 h-12 object-cover rounded-lg"
+                          onError={(e) => {
+                            e.target.src = "https://via.placeholder.com/150x100";
+                          }}
+                        />
                       </td>
                       <td className="px-6 py-4">
                         <div className="font-semibold text-gray-900">
-                          {user.firstName} {user.lastName}
+                          {banner.bannerTitle}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-600 max-w-xs truncate">
+                          {banner.bannerDescription}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-blue-600 hover:underline max-w-xs truncate">
+                          {banner.navigationLink || "N/A"}
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-600">
-                          {user.email}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-600">
-                          {user.phoneNumber}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-600">
-                          {formatDate(user.creationDate)}
+                          {formatDate(banner.createdAt)}
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -306,25 +272,16 @@ export const UsersTable = ({ initialUsers, loading, onUsersUpdate }) => {
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            onClick={() => handleEditClick(user)}
+                            onClick={() => handleEdit(banner.id)}
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Edit User"
+                            title="Edit"
                           >
                             <Edit size={18} />
                           </motion.button>
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            onClick={() => handlePasswordClick(user)}
-                            className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                            title="Change Password"
-                          >
-                            <KeyRound size={18} />
-                          </motion.button>
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => handleDeleteClick(user)}
+                            onClick={() => handleDeleteClick(banner)}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete"
                           >
@@ -388,8 +345,8 @@ export const UsersTable = ({ initialUsers, loading, onUsersUpdate }) => {
       {/* Confirmation Dialog */}
       <ConfirmDialog
         isOpen={showConfirmDialog}
-        title="Delete User"
-        message={`Are you sure you want to delete "${userToDelete?.firstName} ${userToDelete?.lastName}"? This action cannot be undone.`}
+        title="Delete Banner"
+        message={`Are you sure you want to delete "${bannerToDelete?.bannerTitle}"? This action cannot be undone.`}
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
@@ -401,23 +358,6 @@ export const UsersTable = ({ initialUsers, loading, onUsersUpdate }) => {
         message={messageText}
         onClose={handleMessageClose}
       />
-
-      {/* Edit User Dialog */}
-      <EditUserDialog
-        isOpen={showEditDialog}
-        onClose={() => setShowEditDialog(false)}
-        user={userToEdit}
-        onSuccess={handleEditSuccess}
-      />
-
-      {/* Change Password Dialog */}
-      <ChangePasswordDialog
-        isOpen={showPasswordDialog}
-        onClose={() => setShowPasswordDialog(false)}
-        userEmail={userToEdit?.email}
-        userName={`${userToEdit?.firstName} ${userToEdit?.lastName}`}
-        onSuccess={handlePasswordSuccess}
-      />
     </>
   );
-};
+}

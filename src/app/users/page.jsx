@@ -1,53 +1,82 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { RotateCcw, UserCheck, UserIcon, UserPlus } from "lucide-react";
-import React from "react";
+import { UserIcon } from "lucide-react";
 import StatCard from "../components/StatCard";
 import { UsersTable } from "../components/UsersTable";
+import { getAllUsers } from "@/services/api/usersService";
 
 const Userspage = () => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await getAllUsers();
+      
+      if (response.STS === "200" && response.CONTENT) {
+        setUsers(response.CONTENT);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex-1 overflow-auto relative z-10">
-      <main className="max-w-7xl mx-auto py-6 px-4 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col gap-4"
+        >
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+              Manage Users
+            </h1>
+            <p className="text-gray-600 mt-2">
+              View and manage all registered users
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Statistics */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8"
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
         >
           <StatCard
-            name="Total Users"
+            title="Total Users"
+            value={users.length}
             icon={UserIcon}
-            value="4,357"
-            bgcolor="bg-[#d8ebff]"
-            color="text-blue-500"
-          />
-          <StatCard
-            name="New Users"
-            icon={UserPlus}
-            value="18,450"
-            bgcolor="bg-[#e8ffd8]"
-            color="text-green-500"
-          />
-          <StatCard
-            name="Active Users"
-            icon={UserCheck}
-            value="12,780"
-            bgcolor="bg-[#fff5d8]"
-            color="text-orange-500"
-          />
-          <StatCard
-            name="Returning Users"
-            icon={RotateCcw}
-            value="8"
-            bgcolor="bg-[#f4d8ff]"
-            color="text-purple-500"
+            color="from-blue-500 to-blue-600"
           />
         </motion.div>
 
-        <UsersTable />
-      </main>
+        {/* Users Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <UsersTable 
+            initialUsers={users} 
+            loading={loading}
+            onUsersUpdate={fetchUsers}
+          />
+        </motion.div>
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 // Profile API Service
 
-const API_BASE_URL = "https://api.revupbikes.com/api";
+import { API_BASE_URL } from "@/config/apiConfig";
 
 /**
  * Get User Profile

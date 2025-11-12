@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload, FileSpreadsheet, CheckCircle, XCircle } from "lucide-react";
 import { getAllPlaces } from "../../services/api";
+import { API_BASE_URL } from "@/config/apiConfig";
 
 const ImportBikesDialog = ({ isOpen, onClose }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -28,8 +29,8 @@ const ImportBikesDialog = ({ isOpen, onClose }) => {
     setLoadingPlaces(true);
     try {
       const response = await getAllPlaces();
-      if (response.success && response.places) {
-        setPlaces(response.places);
+      if (response.STS === "200" && response.CONTENT) {
+        setPlaces(response.CONTENT);
       }
     } catch (err) {
       console.error("Error fetching places:", err);
@@ -100,7 +101,7 @@ const ImportBikesDialog = ({ isOpen, onClose }) => {
 
       const token = sessionStorage.getItem("token");
       
-      const response = await fetch("https://api.revupbikes.com/api/bikes/import", {
+      const response = await fetch(`${API_BASE_URL}/bikes/import`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

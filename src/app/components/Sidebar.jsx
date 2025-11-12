@@ -15,6 +15,7 @@ import {
   BadgeQuestionMark,
   X,
   MapPin,
+  Image,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -33,6 +34,7 @@ import { useEffect, useState } from "react";
     ChartColumnBig,
     BadgeQuestionMark,
     MapPin,
+    Image,
   };const Sidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarItems, setSidebarItems] = useState([]);

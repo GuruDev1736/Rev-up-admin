@@ -1,6 +1,6 @@
 // Forgot Password API Service
 
-const API_BASE_URL = "https://api.revupbikes.com/api";
+import { API_BASE_URL } from "@/config/apiConfig";
 
 /**
  * Send OTP to user's email
@@ -68,7 +68,7 @@ export const verifyOtp = async (email, otp) => {
 export const resetPassword = async (email, newPassword) => {
   try {
     const res = await fetch(
-      `${API_BASE_URL}/forgot-password/reset-password?email=${email}&newpassword=${newPassword}`,
+      `${API_BASE_URL}/forgot-password/reset-password?email=${email}&newPassword=${newPassword}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

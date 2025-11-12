@@ -1,8 +1,7 @@
 // Upload Service - API functions for file uploads
 
 import { getAuthHeaders, getUserId } from "./apiHelpers";
-
-const API_BASE_URL = "https://api.revupbikes.com/api";
+import { API_BASE_URL } from "@/config/apiConfig";
 
 /**
  * Upload image file

@@ -4,9 +4,10 @@
     { "name": "Payments", "icon": "CreditCard", "href": "/payments" },
     { "name": "Manage Bikes", "icon": "Bike", "href": "/products" },
     { "name": "Manage Places", "icon": "MapPin", "href": "/places" },
+    { "name": "Manage Banners", "icon": "Image", "href": "/banners" },
     { "name": "Reports", "icon": "ChartColumnBig", "href": "/reports" },
     { "name": "Users", "icon": "Users", "href": "/users" },
-    { "name": "Orders", "icon": "FileText", "href": "/orders" }
+    { "name": "Bookings", "icon": "FileText", "href": "/bookings" }
   ],
    
   "sales": [
