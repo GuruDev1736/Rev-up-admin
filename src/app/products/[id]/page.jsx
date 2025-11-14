@@ -48,8 +48,8 @@ const BikePage = () => {
         // For add mode, only fetch places
         if (isAddMode) {
           const placesResponse = await getAllPlaces();
-          if (placesResponse.success) {
-            setPlaces(placesResponse.places);
+          if (placesResponse.STS === "200" && placesResponse.CONTENT) {
+            setPlaces(placesResponse.CONTENT);
           }
           setLoading(false);
           return;
@@ -62,8 +62,8 @@ const BikePage = () => {
         ]);
 
         // Set places
-        if (placesResponse.success) {
-          setPlaces(placesResponse.places);
+        if (placesResponse.STS === "200" && placesResponse.CONTENT) {
+          setPlaces(placesResponse.CONTENT);
         }
 
         // Set bike data
