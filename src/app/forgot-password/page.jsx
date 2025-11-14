@@ -121,9 +121,11 @@ export default function ForgotPasswordPage() {
 
         {/* Logo */}
         <div className="flex items-center justify-center space-x-2 mb-8">
-          <div className="w-10 h-10 bg-gradient-to-r from-[#f02521] to-[#f85d5d] rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xl">R</span>
-          </div>
+          <img 
+            src="/logo.jpg" 
+            alt="RevUp Logo" 
+            className="w-10 h-10 rounded-lg object-cover"
+          />
           <span className="font-bold text-xl text-gray-900">RevUp Admin</span>
         </div>
 

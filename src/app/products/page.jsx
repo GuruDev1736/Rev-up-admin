@@ -71,7 +71,7 @@ export const ProductsPage = () => {
       <div className="max-w-7xl mx-auto py-6 lg:px-8">
         {/* Header with Add and Import Buttons */}
         <div className="flex justify-between items-center mb-6 px-4 lg:px-0">
-          <h1 className="text-2xl font-bold text-gray-100">Manage Bikes</h1>
+          <h1 className="text-2xl font-bold text-black">Manage Bikes</h1>
           <div className="flex gap-3">
             <button
               onClick={() => setShowImportDialog(true)}

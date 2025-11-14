@@ -5,7 +5,10 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, X } from "lucide-react";
 
-const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText = "Confirm", cancelText = "Cancel" }) => {
+const ConfirmDialog = ({ isOpen, onClose, onCancel, onConfirm, title, message, confirmText = "Confirm", cancelText = "Cancel" }) => {
+  // Use onCancel if provided, otherwise fall back to onClose
+  const handleCancel = onCancel || onClose;
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -29,7 +32,7 @@ const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={handleCancel}
           />
 
           {/* Dialog */}
@@ -51,7 +54,7 @@ const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText
                   <h3 className="text-xl font-semibold text-gray-100">{title}</h3>
                 </div>
                 <button
-                  onClick={onClose}
+                  onClick={handleCancel}
                   className="text-gray-400 hover:text-gray-200 transition-colors"
                 >
                   <X size={24} />
@@ -66,7 +69,7 @@ const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText
               {/* Footer */}
               <div className="flex gap-3 p-6 pt-0">
                 <button
-                  onClick={onClose}
+                  onClick={handleCancel}
                   className="flex-1 bg-[#2f2f2f] text-gray-200 py-2.5 px-4 rounded-lg hover:bg-[#3f3f3f] transition duration-200 font-medium"
                 >
                   {cancelText}

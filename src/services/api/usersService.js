@@ -55,10 +55,27 @@ export const deleteUser = async (userId) => {
     });
 
     const data = await response.json();
-    return data;
+
+    if (response.ok && data.STS === "200") {
+      return {
+        STS: "200",
+        success: true,
+        MSG: data.MSG || "User deleted successfully",
+      };
+    } else {
+      return {
+        STS: data.STS || "400",
+        success: false,
+        MSG: data.MSG || "Failed to delete user",
+      };
+    }
   } catch (error) {
     console.error("Error deleting user:", error);
-    throw error;
+    return {
+      STS: "500",
+      success: false,
+      MSG: "Error deleting user. Please try again.",
+    };
   }
 };
 

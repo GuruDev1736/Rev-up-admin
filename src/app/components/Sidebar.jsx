@@ -71,9 +71,11 @@ import { useEffect, useState } from "react";
           {/* Logo Section */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-[#f02521] to-[#f85d5d] rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-xl">R</span>
-              </div>
+              <img 
+                src="/logo.jpg" 
+                alt="RevUp Logo" 
+                className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+              />
               <div
                 className={`${
                   isSidebarOpen ? "block" : "hidden"
