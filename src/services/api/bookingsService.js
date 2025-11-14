@@ -192,7 +192,7 @@ export const cancelBooking = async (bookingId, reason) => {
     const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}/cancel`, {
       method: "PUT",
       headers: getAuthHeaders(),
-      body: JSON.stringify({ cancellationReason: reason }),
+      body: JSON.stringify({ reason: reason }),
     });
 
     const data = await res.json();
