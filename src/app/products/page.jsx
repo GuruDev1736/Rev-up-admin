@@ -52,10 +52,10 @@ export const ProductsPage = () => {
           }));
         }
 
-        if (placesResponse.success && placesResponse.places) {
+        if (placesResponse.STS === "200" && placesResponse.CONTENT) {
           setStats((prev) => ({
             ...prev,
-            places: placesResponse.places.length,
+            places: placesResponse.CONTENT.length,
           }));
         }
       } catch (error) {

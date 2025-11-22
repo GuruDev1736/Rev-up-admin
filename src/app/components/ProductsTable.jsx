@@ -55,8 +55,8 @@ const ProductsTable = () => {
           setError(bikesResponse.message);
         }
 
-        if (placesResponse.success && placesResponse.places) {
-          setAllPlaces(placesResponse.places);
+        if (placesResponse.STS === "200" && placesResponse.CONTENT) {
+          setAllPlaces(placesResponse.CONTENT);
         }
       } catch (err) {
         setError("Failed to load data");
