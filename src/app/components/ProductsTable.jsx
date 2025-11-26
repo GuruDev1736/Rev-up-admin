@@ -336,9 +336,10 @@ const ProductsTable = () => {
                   "Model",
                   "Brand",
                   "Category",
-                  "Price/Hour",
                   "Price/Day",
-                  "Status",
+                  "Price/Week",
+                  "Price/Month",
+                  "Quantity",
                   "Actions",
                 ].map((header) => (
                   <th
@@ -354,7 +355,7 @@ const ProductsTable = () => {
             <tbody className="divide-y divide-gray-700">
               {paginatedProducts.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="px-6 py-12 text-center text-gray-400">
+                  <td colSpan="9" className="px-6 py-12 text-center text-gray-400">
                     {filteredProducts.length === 0 ? "No bikes found" : "No bikes on this page"}
                   </td>
                 </tr>
@@ -409,22 +410,10 @@ const ProductsTable = () => {
                       <div className="mt-2 text-xs text-gray-300 space-y-1">
                         <div>Brand: {product.brand}</div>
                         <div>Category: {product.category}</div>
-                        <div>Price/Hour: ₹{product.pricePerHour?.toFixed(2)}</div>
                         <div>Price/Day: ₹{product.pricePerDay?.toFixed(2)}</div>
-                        <div>
-                          Status:{" "}
-                          <span
-                            className={`${
-                              product.status === "AVAILABLE"
-                                ? "text-green-500"
-                                : product.status === "RENTED"
-                                ? "text-yellow-500"
-                                : "text-red-500"
-                            }`}
-                          >
-                            {product.status}
-                          </span>
-                        </div>
+                        <div>Price/Week: ₹{product.pricePerWeek?.toFixed(2)}</div>
+                        <div>Price/Month: ₹{product.pricePerMonth?.toFixed(2)}</div>
+                        <div>Quantity: {product.quantity || 0}</div>
                       </div>
                     </td>
 
@@ -455,25 +444,19 @@ const ProductsTable = () => {
                     </td>
 
                     <td className="hidden md:table-cell px-6 py-4 text-sm text-gray-300">
-                      ₹{product.pricePerHour?.toFixed(2)}
-                    </td>
-
-                    <td className="hidden md:table-cell px-6 py-4 text-sm text-gray-300">
                       ₹{product.pricePerDay?.toFixed(2)}
                     </td>
 
-                    <td className="hidden md:table-cell px-6 py-4 text-sm">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          product.status === "AVAILABLE"
-                            ? "bg-green-500/20 text-green-500"
-                            : product.status === "RENTED"
-                            ? "bg-yellow-500/20 text-yellow-500"
-                            : "bg-red-500/20 text-red-500"
-                        }`}
-                      >
-                        {product.status}
-                      </span>
+                    <td className="hidden md:table-cell px-6 py-4 text-sm text-gray-300">
+                      ₹{product.pricePerWeek?.toFixed(2)}
+                    </td>
+
+                    <td className="hidden md:table-cell px-6 py-4 text-sm text-gray-300">
+                      ₹{product.pricePerMonth?.toFixed(2)}
+                    </td>
+
+                    <td className="hidden md:table-cell px-6 py-4 text-sm text-gray-300">
+                      {product.quantity || 0}
                     </td>
 
                     {/* Actions desktop */}

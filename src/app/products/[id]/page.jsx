@@ -29,8 +29,10 @@ const BikePage = () => {
     brand: "",
     bikeImage: "",
     description: "",
-    pricePerHour: "",
     pricePerDay: "",
+    pricePerWeek: "",
+    pricePerMonth: "",
+    quantity: "",
     category: "",
     engineCapacity: "",
     fuelType: "",
@@ -77,8 +79,10 @@ const BikePage = () => {
               brand: bike.brand || "",
               bikeImage: bike.bikeImage || "",
               description: bike.description || "",
-              pricePerHour: bike.pricePerHour || "",
               pricePerDay: bike.pricePerDay || "",
+              pricePerWeek: bike.pricePerWeek || "",
+              pricePerMonth: bike.pricePerMonth || "",
+              quantity: bike.quantity || "",
               category: bike.category || "",
               engineCapacity: bike.engineCapacity || "",
               fuelType: bike.fuelType || "",
@@ -110,19 +114,10 @@ const BikePage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => {
-      const updated = { ...prev, [name]: value };
-      
-      // Auto-calculate pricePerDay when pricePerHour changes
-      if (name === "pricePerHour" && value) {
-        const hourlyPrice = parseFloat(value);
-        if (!isNaN(hourlyPrice)) {
-          updated.pricePerDay = (hourlyPrice * 24).toFixed(2);
-        }
-      }
-      
-      return updated;
-    });
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
 
     // Update image preview if URL changes
     if (name === "bikeImage" && imageOption === "url") {
@@ -203,8 +198,10 @@ const BikePage = () => {
         brand: formData.brand,
         bikeImage: bikeImageUrl,
         description: formData.description,
-        pricePerHour: parseFloat(formData.pricePerHour),
         pricePerDay: parseFloat(formData.pricePerDay),
+        pricePerWeek: parseFloat(formData.pricePerWeek),
+        pricePerMonth: parseFloat(formData.pricePerMonth),
+        quantity: parseInt(formData.quantity),
         category: formData.category,
         engineCapacity: parseInt(formData.engineCapacity),
         fuelType: formData.fuelType,
@@ -263,7 +260,7 @@ const BikePage = () => {
             <ArrowLeft size={20} className="mr-2" />
             Back to Bikes
           </button>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">
+          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#f02521] to-[#f85d5d] bg-clip-text text-transparent">
             {isAddMode ? "Add New Bike" : "Edit Bike Details"}
           </h1>
           <p className="text-gray-400 mt-2">
@@ -472,24 +469,6 @@ const BikePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Price Per Hour (₹) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                name="pricePerHour"
-                value={formData.pricePerHour}
-                onChange={handleChange}
-                required
-                step="0.01"
-                min="0"
-                className="w-full px-4 py-2 bg-[#2f2f2f] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#f02521]"
-                placeholder="e.g., 50"
-              />
-              <p className="text-xs text-gray-500 mt-1">Daily price will be auto-calculated (hourly × 24)</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Price Per Day (₹) <span className="text-red-500">*</span>
               </label>
               <input
@@ -500,11 +479,59 @@ const BikePage = () => {
                 required
                 step="0.01"
                 min="0"
-                readOnly
-                className="w-full px-4 py-2 bg-[#3f3f3f] border border-gray-600 rounded-lg text-gray-400 cursor-not-allowed"
-                placeholder="Auto-calculated"
+                className="w-full px-4 py-2 bg-[#2f2f2f] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#f02521]"
+                placeholder="e.g., 350"
               />
-              <p className="text-xs text-gray-500 mt-1">Auto-calculated from hourly rate</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Price Per Week (₹) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="pricePerWeek"
+                value={formData.pricePerWeek}
+                onChange={handleChange}
+                required
+                step="0.01"
+                min="0"
+                className="w-full px-4 py-2 bg-[#2f2f2f] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#f02521]"
+                placeholder="e.g., 2100"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Price Per Month (₹) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="pricePerMonth"
+                value={formData.pricePerMonth}
+                onChange={handleChange}
+                required
+                step="0.01"
+                min="0"
+                className="w-full px-4 py-2 bg-[#2f2f2f] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#f02521]"
+                placeholder="e.g., 7000"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Quantity <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="quantity"
+                value={formData.quantity}
+                onChange={handleChange}
+                required
+                min="0"
+                className="w-full px-4 py-2 bg-[#2f2f2f] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#f02521]"
+                placeholder="e.g., 5"
+              />
             </div>
           </div>
 
