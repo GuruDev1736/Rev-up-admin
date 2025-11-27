@@ -43,13 +43,23 @@ const ProductsTable = () => {
       try {
         setLoading(true);
         
+        const userRole = sessionStorage.getItem("userRole");
+        const userPlaceId = sessionStorage.getItem("placeId");
+        
         const [bikesResponse, placesResponse] = await Promise.all([
           getAllBikes(),
           getAllPlaces(),
         ]);
         
         if (bikesResponse.success) {
-          setProducts(bikesResponse.bikes);
+          let bikes = bikesResponse.bikes;
+          
+          // Filter bikes by placeId for ROLE_ADMIN users
+          if (userRole === "ROLE_ADMIN" && userPlaceId) {
+            bikes = bikes.filter(bike => bike.place?.id?.toString() === userPlaceId);
+          }
+          
+          setProducts(bikes);
           setError(null);
         } else {
           setError(bikesResponse.message);

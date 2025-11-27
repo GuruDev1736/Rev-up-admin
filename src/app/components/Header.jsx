@@ -64,7 +64,10 @@ const Header = () => {
         </div>
         <div className="flex items-center space-x-3 sm:space-x-6">
           {/* Notifications */}
-          <div className="relative">
+          <div 
+            className="relative cursor-pointer"
+            onClick={() => router.push("/notifications")}
+          >
             <Bell className="w-5 sm:w-6 h-5 sm:h-6 text-grey-300 cursor-pointer hover:text-white transition-colors" />
             <span className="absolute -top-1 -right-1 w-4 h-4 bg-white text-[#f02521] text-xs font-bold rounded-full flex items-center justify-center">
               3

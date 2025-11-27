@@ -38,12 +38,39 @@ import { useEffect, useState } from "react";
   };const Sidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarItems, setSidebarItems] = useState([]);
+  const [userRole, setUserRole] = useState("");
   const pathname = usePathname();
 
   useEffect(() => {
+    // Get user role from sessionStorage
+    const role = sessionStorage.getItem("userRole");
+    setUserRole(role);
+
     fetch("/data/data.json")
       .then((res) => res.json())
-      .then((data) => setSidebarItems(data.sidebarItems))
+      .then((data) => {
+        let items = data.sidebarItems;
+        
+        // Filter items based on user role
+        if (role === "ROLE_ADMIN") {
+          // For regular admins, show Dashboard, Bookings, and Manage Bikes
+          items = data.sidebarItems.filter(item => 
+            item.name === "Dashboard" || item.name === "Bookings" || item.name === "Manage Bikes"
+          );
+          // Update Dashboard href for ROLE_ADMIN
+          items = items.map(item => {
+            if (item.name === "Dashboard") {
+              return { ...item, href: "/admin-dashboard" };
+            }
+            return item;
+          });
+        } else if (role === "ROLE_MASTER_ADMIN") {
+          // For master admins, show all items
+          items = data.sidebarItems;
+        }
+        
+        setSidebarItems(items);
+      })
       .catch((error) => console.error("Error loading sidebar data:", error));
   }, []);
 

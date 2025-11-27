@@ -33,7 +33,7 @@ export default function ProfilePage() {
     const token = sessionStorage.getItem("token");
     const userRole = sessionStorage.getItem("userRole");
 
-    if (!token || userRole !== "ROLE_MASTER_ADMIN") {
+    if (!token || (userRole !== "ROLE_MASTER_ADMIN" && userRole !== "ROLE_ADMIN")) {
       sessionStorage.clear();
       router.push("/login");
       return;

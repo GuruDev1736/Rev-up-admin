@@ -32,13 +32,22 @@ export const ProductsPage = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        const userRole = sessionStorage.getItem("userRole");
+        const userPlaceId = sessionStorage.getItem("placeId");
+
         const [bikesResponse, placesResponse] = await Promise.all([
           getAllBikes(),
           getAllPlaces(),
         ]);
 
         if (bikesResponse.success && bikesResponse.bikes) {
-          const bikes = bikesResponse.bikes;
+          let bikes = bikesResponse.bikes;
+          
+          // Filter bikes by placeId for ROLE_ADMIN users
+          if (userRole === "ROLE_ADMIN" && userPlaceId) {
+            bikes = bikes.filter(bike => bike.place?.id?.toString() === userPlaceId);
+          }
+          
           const categories = new Set(bikes.map((bike) => bike.category)).size;
           const available = bikes.filter((bike) => bike.status === "AVAILABLE").length;
           const rented = bikes.filter((bike) => bike.status === "RENTED").length;

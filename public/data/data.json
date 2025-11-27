@@ -7,7 +7,9 @@
     { "name": "Manage Banners", "icon": "Image", "href": "/banners" },
     { "name": "Reports", "icon": "ChartColumnBig", "href": "/reports" },
     { "name": "Users", "icon": "Users", "href": "/users" },
-    { "name": "Bookings", "icon": "FileText", "href": "/bookings" }
+    { "name": "Manage Admin", "icon": "Settings", "href": "/admin" },
+    { "name": "Bookings", "icon": "FileText", "href": "/bookings" },
+    { "name": "Notifications", "icon": "Bell", "href": "/notifications" }
   ],
    
   "sales": [

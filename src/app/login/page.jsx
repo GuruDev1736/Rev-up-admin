@@ -21,8 +21,8 @@ export default function LoginPage() {
     try {
       const data = await loginUser({ email, password });
       if (data.STS === "200") {
-        // Check if user has ROLE_MASTER_ADMIN
-        if (data.CONTENT && data.CONTENT.userRole === "ROLE_MASTER_ADMIN") {
+        // Check if user has ROLE_MASTER_ADMIN or ROLE_ADMIN
+        if (data.CONTENT && (data.CONTENT.userRole === "ROLE_MASTER_ADMIN" || data.CONTENT.userRole === "ROLE_ADMIN")) {
           // Store authentication data in sessionStorage for better security
           // Session will be cleared when browser/tab is closed
           sessionStorage.setItem("token", data.CONTENT.token);
@@ -32,9 +32,19 @@ export default function LoginPage() {
           sessionStorage.setItem("userRole", data.CONTENT.userRole);
           sessionStorage.setItem("userProfilePic", data.CONTENT.userProfilePic);
           
-          router.push("/overview");
+          // Store placeId if available (for ROLE_ADMIN users)
+          if (data.CONTENT.placeId) {
+            sessionStorage.setItem("placeId", data.CONTENT.placeId);
+          }
+          
+          // Route based on user role
+          if (data.CONTENT.userRole === "ROLE_MASTER_ADMIN") {
+            router.push("/overview");
+          } else if (data.CONTENT.userRole === "ROLE_ADMIN") {
+            router.push("/admin-dashboard");
+          }
         } else {
-          setErrorMsg("Access Denied. Only Master Admin can access this dashboard.");
+          setErrorMsg("Access Denied. Only Admin users can access this dashboard.");
         }
       } else {
         setErrorMsg("Invalid credentials, please try again.");

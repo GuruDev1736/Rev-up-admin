@@ -20,9 +20,19 @@ const BookingsPage = () => {
   const fetchBookings = async () => {
     setLoading(true);
     try {
+      const userRole = sessionStorage.getItem("userRole");
+      const userPlaceId = sessionStorage.getItem("placeId");
+
       const response = await getAllBookings();
       if (response.STS === "200" && response.CONTENT) {
-        setBookings(response.CONTENT);
+        let bookings = response.CONTENT;
+        
+        // Filter bookings by placeId for ROLE_ADMIN users
+        if (userRole === "ROLE_ADMIN" && userPlaceId) {
+          bookings = bookings.filter(booking => booking.place?.id?.toString() === userPlaceId);
+        }
+        
+        setBookings(bookings);
         
         // Calculate stats
         const total = response.CONTENT.length;
