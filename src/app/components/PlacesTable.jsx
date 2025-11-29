@@ -11,7 +11,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { deletePlace } from "@/services/api/placesService";
+import { deletePlace, togglePlaceStatus } from "@/services/api/placesService";
 import ConfirmDialog from "./ConfirmDialog";
 import MessageDialog from "./MessageDialog";
 
@@ -25,6 +25,9 @@ export default function PlacesTable({ initialPlaces, loading, onPlacesUpdate }) 
   const [messageType, setMessageType] = useState("success");
   const [messageText, setMessageText] = useState("");
   const [placeToDelete, setPlaceToDelete] = useState(null);
+  const [placeToToggle, setPlaceToToggle] = useState(null);
+  const [showToggleConfirm, setShowToggleConfirm] = useState(false);
+  const [toggleTargetStatus, setToggleTargetStatus] = useState(false);
   const itemsPerPage = 20;
 
   useEffect(() => {
@@ -70,6 +73,27 @@ export default function PlacesTable({ initialPlaces, loading, onPlacesUpdate }) 
     setShowConfirmDialog(true);
   };
 
+  const getPlaceEnabled = (place) => {
+    // Normalize various possible fields that may represent enabled state
+    if (!place) return true;
+    if (typeof place.status === "boolean") return place.status;
+    if (typeof place.isActive === "boolean") return place.isActive;
+    if (typeof place.enabled === "boolean") return place.enabled;
+    if (typeof place.active === "boolean") return place.active;
+    // sometimes status may be string like "ACTIVE"/"INACTIVE"
+    if (typeof place.status === "string") {
+      return place.status.toLowerCase() === "active" || place.status.toLowerCase() === "enabled";
+    }
+    return true;
+  };
+
+  const handleToggleClick = (place) => {
+    const currentlyEnabled = getPlaceEnabled(place);
+    setPlaceToToggle(place);
+    setToggleTargetStatus(!currentlyEnabled);
+    setShowToggleConfirm(true);
+  };
+
   const handleDeleteConfirm = async () => {
     setShowConfirmDialog(false);
     
@@ -97,6 +121,31 @@ export default function PlacesTable({ initialPlaces, loading, onPlacesUpdate }) 
     }
     
     setPlaceToDelete(null);
+  };
+
+  const handleToggleConfirm = async () => {
+    setShowToggleConfirm(false);
+    try {
+      if (!placeToToggle) return;
+      const response = await togglePlaceStatus(placeToToggle.id, toggleTargetStatus);
+      if (response.STS === "200") {
+        setMessageType("success");
+        setMessageText(response.MSG || (toggleTargetStatus ? "Place enabled successfully" : "Place disabled successfully"));
+        setShowMessageDialog(true);
+        if (onPlacesUpdate) onPlacesUpdate();
+      } else {
+        setMessageType("error");
+        setMessageText(response.MSG || "Failed to update place status");
+        setShowMessageDialog(true);
+      }
+    } catch (error) {
+      setMessageType("error");
+      setMessageText("Error updating place status. Please try again.");
+      setShowMessageDialog(true);
+    } finally {
+      setPlaceToToggle(null);
+      setToggleTargetStatus(false);
+    }
   };
 
   const handleDeleteCancel = () => {
@@ -287,6 +336,19 @@ export default function PlacesTable({ initialPlaces, loading, onPlacesUpdate }) 
                           >
                             <Trash2 size={18} />
                           </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => handleToggleClick(place)}
+                            className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                            title={getPlaceEnabled(place) ? "Disable" : "Enable"}
+                          >
+                            {getPlaceEnabled(place) ? (
+                              <span className="text-sm font-medium">Disable</span>
+                            ) : (
+                              <span className="text-sm font-medium">Enable</span>
+                            )}
+                          </motion.button>
                         </div>
                       </td>
                     </motion.tr>
@@ -349,6 +411,21 @@ export default function PlacesTable({ initialPlaces, loading, onPlacesUpdate }) 
         message={`Are you sure you want to delete "${placeToDelete?.placeName}"? This action cannot be undone.`}
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
+      />
+
+      {/* Toggle Enable/Disable Dialog */}
+      <ConfirmDialog
+        isOpen={showToggleConfirm}
+        title={toggleTargetStatus ? "Enable Place" : "Disable Place"}
+        message={`Are you sure you want to ${toggleTargetStatus ? "enable" : "disable"} "${placeToToggle?.placeName}"?`}
+        onConfirm={handleToggleConfirm}
+        onCancel={() => {
+          setShowToggleConfirm(false);
+          setPlaceToToggle(null);
+          setToggleTargetStatus(false);
+        }}
+        confirmText={toggleTargetStatus ? "Enable" : "Disable"}
+        cancelText="Cancel"
       />
 
       {/* Message Dialog */}

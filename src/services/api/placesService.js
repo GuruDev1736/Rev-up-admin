@@ -84,3 +84,28 @@ export const deletePlace = async (placeId) => {
     throw error;
   }
 };
+
+/**
+ * Toggle place status (enable/disable)
+ * @param {number} placeId - ID of the place
+ * @param {boolean} status - true to enable, false to disable
+ * @returns {Promise<Object>} Response with status update result
+ */
+export const togglePlaceStatus = async (placeId, status) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/places/status/${placeId}`, {
+      method: "PUT",
+      headers: {
+        ...getAuthHeaders(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error toggling place status:", error);
+    throw error;
+  }
+};

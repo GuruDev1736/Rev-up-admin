@@ -1,8 +1,9 @@
 "use client";
-import { Bell, LogOut, User, Settings, ChevronDown } from "lucide-react";
+import { Bell, LogOut, User, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { getNotificationsByPlace } from "../../services/api";
 
 import admin from "../images/admin.jpg";
 
@@ -11,6 +12,7 @@ const Header = () => {
   const [fullName, setFullName] = useState("Admin");
   const [userEmail, setUserEmail] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -22,7 +24,34 @@ const Header = () => {
     if (storedEmail) {
       setUserEmail(storedEmail);
     }
+
+    // Fetch notifications count
+    fetchNotificationsCount();
+
+    // Set up interval to refresh count every 30 seconds
+    const interval = setInterval(() => {
+      fetchNotificationsCount();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
+
+  const fetchNotificationsCount = async () => {
+    try {
+      const placeId = sessionStorage.getItem("placeId");
+      if (!placeId) return;
+
+      const response = await getNotificationsByPlace(placeId);
+      if (response.STS === "200" && response.CONTENT) {
+        const unread = response.CONTENT.filter(
+          (notif) => notif.status?.toUpperCase() === "UNREAD"
+        ).length;
+        setUnreadCount(unread);
+      }
+    } catch (error) {
+      console.error("Error fetching notifications count:", error);
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -48,11 +77,6 @@ const Header = () => {
     router.push("/profile");
   };
 
-  const handleSettingsClick = () => {
-    setIsDropdownOpen(false);
-    router.push("/settings");
-  };
-
   return (
     <header className="max-w-7xl mt-2 bg-gradient-to-r from-[#f02521] to-[#f85d5d] p-4 shadow-lg border-[#1f1f1f] mx-auto sm:mx-6 lg:mx-8 rounded-[15px]">
       <div className="mx-auto p-4 sm:px-6 flex items-center justify-between">
@@ -69,9 +93,11 @@ const Header = () => {
             onClick={() => router.push("/notifications")}
           >
             <Bell className="w-5 sm:w-6 h-5 sm:h-6 text-grey-300 cursor-pointer hover:text-white transition-colors" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-white text-[#f02521] text-xs font-bold rounded-full flex items-center justify-center">
-              3
-            </span>
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-white text-[#f02521] text-xs font-bold rounded-full flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
           </div>
 
           {/* User Profile Dropdown */}
@@ -139,23 +165,6 @@ const Header = () => {
                       </p>
                       <p className="text-xs text-gray-500">
                         View and edit profile
-                      </p>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={handleSettingsClick}
-                    className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left group"
-                  >
-                    <div className="w-9 h-9 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Settings size={18} className="text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">
-                        Settings
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Preferences & privacy
                       </p>
                     </div>
                   </button>

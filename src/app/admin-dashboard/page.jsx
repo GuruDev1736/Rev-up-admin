@@ -6,18 +6,27 @@ import StatCard from "../components/StatCard";
 import { motion } from "framer-motion";
 import { DollarSign, ShoppingBag, FileText, MapPin } from "lucide-react";
 import { getAllBikes } from "@/services/api/bikesService";
-import { getAllBookings } from "@/services/api/bookingsService";
+import { getAllBookings, getBookingsByPlace } from "@/services/api/bookingsService";
+import { getNotificationsByPlace, markNotificationAsRead } from "@/services/api/notificationsService";
+import { MonthlyPaymentChart } from "../components/MonthlyPaymentChart";
+import { MostBookedBikesChart } from "../components/MostBookedBikesChart";
+import NotificationCard from "../components/NotificationCard";
+import NotificationDetailsDialog from "../components/NotificationDetailsDialog";
 
 const AdminDashboardPage = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalBikes: 0,
-    availableBikes: 0,
     totalBookings: 0,
     activeBookings: 0,
   });
   const [placeName, setPlaceName] = useState("");
+  const [bookings, setBookings] = useState([]);
+  const [bikes, setBikes] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
@@ -37,44 +46,77 @@ const AdminDashboardPage = () => {
     fetchDashboardData();
   }, [router]);
 
+  const handleNotificationClick = async (notification) => {
+    setSelectedNotification(notification);
+    setShowDetailsDialog(true);
+    
+    // Only mark as read if it's currently unread
+    if (notification.status?.toUpperCase() === "UNREAD") {
+      try {
+        const response = await markNotificationAsRead(notification.id, true);
+        if (response.STS === "200") {
+          setNotifications(prev => 
+            prev.map(n => n.id === notification.id ? { ...n, status: "READ" } : n)
+          );
+        }
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
+      }
+    }
+  };
+
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       const userPlaceId = sessionStorage.getItem("placeId");
 
-      const [bikesResponse, bookingsResponse] = await Promise.all([
+      const [bikesResponse, bookingsResponse, notificationsResponse] = await Promise.all([
         getAllBikes(),
-        getAllBookings(),
+        userPlaceId ? getBookingsByPlace(userPlaceId) : getAllBookings(),
+        userPlaceId ? getNotificationsByPlace(userPlaceId) : Promise.resolve({ STS: "200", CONTENT: [] }),
       ]);
 
       let totalBikes = 0;
-      let availableBikes = 0;
       let totalBookings = 0;
       let activeBookings = 0;
 
       // Filter bikes by placeId
       if (bikesResponse.success && bikesResponse.bikes) {
-        const bikes = bikesResponse.bikes.filter(
-          bike => bike.place?.id?.toString() === userPlaceId
-        );
-        totalBikes = bikes.length;
-        availableBikes = bikes.filter(bike => bike.status === "AVAILABLE").length;
+        const filteredBikes = bikesResponse.bikes.filter(bike => {
+          const bikePlaceId = bike.place?.id || bike.placeId || bike.place_id;
+          return bikePlaceId?.toString() === userPlaceId;
+        });
+        setBikes(filteredBikes);
+        totalBikes = filteredBikes.length;
       }
 
-      // Filter bookings by placeId
+      // Bookings are already filtered by API for place-specific call
       if (bookingsResponse.STS === "200" && bookingsResponse.CONTENT) {
-        const bookings = bookingsResponse.CONTENT.filter(
-          booking => booking.place?.id?.toString() === userPlaceId
-        );
-        totalBookings = bookings.length;
-        activeBookings = bookings.filter(
+        const bookingsData = bookingsResponse.CONTENT;
+        setBookings(bookingsData);
+        totalBookings = bookingsData.length;
+        activeBookings = bookingsData.filter(
           booking => booking.bookingStatus === "CONFIRMED" || booking.bookingStatus === "ACTIVE"
         ).length;
       }
 
+      // Set notifications
+      if (notificationsResponse.STS === "200" && notificationsResponse.CONTENT) {
+        // Sort notifications by createdAt date (latest first)
+        const sortedNotifications = [...notificationsResponse.CONTENT].sort((a, b) => {
+          const dateA = Array.isArray(a.createdAt) 
+            ? new Date(a.createdAt[0], a.createdAt[1] - 1, a.createdAt[2]).getTime()
+            : new Date(a.createdAt).getTime();
+          const dateB = Array.isArray(b.createdAt)
+            ? new Date(b.createdAt[0], b.createdAt[1] - 1, b.createdAt[2]).getTime()
+            : new Date(b.createdAt).getTime();
+          return dateB - dateA; // Descending order (latest first)
+        });
+        setNotifications(sortedNotifications);
+      }
+
       setStats({
         totalBikes,
-        availableBikes,
         totalBookings,
         activeBookings,
       });
@@ -113,7 +155,7 @@ const AdminDashboardPage = () => {
 
         {/* Stats Cards */}
         <motion.div
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8 min-w-0"
+          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8 min-w-0"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
@@ -124,13 +166,6 @@ const AdminDashboardPage = () => {
             value={stats.totalBikes.toString()}
             bgcolor="bg-[#d8ebff]"
             color="text-blue-500"
-          />
-          <StatCard
-            name="Available Bikes"
-            icon={ShoppingBag}
-            value={stats.availableBikes.toString()}
-            bgcolor="bg-[#e8ffd8]"
-            color="text-green-500"
           />
           <StatCard
             name="Total Bookings"
@@ -192,19 +227,62 @@ const AdminDashboardPage = () => {
           </div>
         </motion.div>
 
-        {/* Info Section */}
+        {/* Notifications Section */}
+        {notifications.length > 0 && (
+          <motion.div
+            className="mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.25 }}
+          >
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Recent Notifications
+              </h2>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {notifications.slice(0, 5).map((notification) => (
+                  <NotificationCard
+                    key={notification.id}
+                    notification={notification}
+                    onClick={handleNotificationClick}
+                  />
+                ))}
+              </div>
+              {notifications.length > 5 && (
+                <div className="mt-4 text-center">
+                  <button 
+                    onClick={() => router.push("/notifications")}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    View all {notifications.length} notifications
+                  </button>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Charts Section */}
         <motion.div
-          className="mt-8 bg-gradient-to-r from-[#f02521] to-[#f85d5d] rounded-xl shadow-lg p-6 text-white"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <h3 className="text-xl font-semibold mb-2">Your Location Dashboard</h3>
-          <p className="text-white/90">
-            This dashboard shows data specific to your location. You can manage bikes and bookings for your assigned place.
-          </p>
+          <MonthlyPaymentChart bookings={bookings} />
+          <MostBookedBikesChart bookings={bookings} bikes={bikes} />
         </motion.div>
       </main>
+
+      {/* Notification Details Dialog */}
+      <NotificationDetailsDialog
+        isOpen={showDetailsDialog}
+        onClose={() => {
+          setShowDetailsDialog(false);
+          setSelectedNotification(null);
+        }}
+        notification={selectedNotification}
+      />
     </div>
   );
 };

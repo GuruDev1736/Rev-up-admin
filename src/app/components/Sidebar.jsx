@@ -53,9 +53,9 @@ import { useEffect, useState } from "react";
         
         // Filter items based on user role
         if (role === "ROLE_ADMIN") {
-          // For regular admins, show Dashboard, Bookings, and Manage Bikes
+          // For regular admins, show Dashboard, Bookings, Manage Bikes, and Notifications
           items = data.sidebarItems.filter(item => 
-            item.name === "Dashboard" || item.name === "Bookings" || item.name === "Manage Bikes"
+            item.name === "Dashboard" || item.name === "Bookings" || item.name === "Manage Bikes" || item.name === "Notifications"
           );
           // Update Dashboard href for ROLE_ADMIN
           items = items.map(item => {

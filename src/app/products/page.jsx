@@ -23,8 +23,6 @@ export const ProductsPage = () => {
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [stats, setStats] = useState({
     totalBikes: 0,
-    available: 0,
-    rented: 0,
     categories: 0,
     places: 0,
   });
@@ -45,18 +43,18 @@ export const ProductsPage = () => {
           
           // Filter bikes by placeId for ROLE_ADMIN users
           if (userRole === "ROLE_ADMIN" && userPlaceId) {
-            bikes = bikes.filter(bike => bike.place?.id?.toString() === userPlaceId);
+            bikes = bikes.filter(bike => {
+              // Check multiple possible place id fields
+              const bikePlaceId = bike.place?.id || bike.placeId || bike.place_id;
+              return bikePlaceId?.toString() === userPlaceId;
+            });
           }
           
           const categories = new Set(bikes.map((bike) => bike.category)).size;
-          const available = bikes.filter((bike) => bike.status === "AVAILABLE").length;
-          const rented = bikes.filter((bike) => bike.status === "RENTED").length;
 
           setStats((prev) => ({
             ...prev,
             totalBikes: bikes.length,
-            available,
-            rented,
             categories,
           }));
         }
@@ -100,7 +98,7 @@ export const ProductsPage = () => {
         </div>
 
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
@@ -111,20 +109,6 @@ export const ProductsPage = () => {
             value={stats.totalBikes.toString()} 
             bgcolor="bg-[#d8ebff]" 
             color="text-blue-500" 
-          />
-          <StatCard 
-            name="Available" 
-            icon={SquareActivity} 
-            value={stats.available.toString()} 
-            bgcolor="bg-[#e8ffd8]" 
-            color="text-green-500"
-          />
-          <StatCard 
-            name="Rented" 
-            icon={DollarSign} 
-            value={stats.rented.toString()} 
-            bgcolor="bg-[#fff5d8]" 
-            color="text-orange-500"
           />
           <StatCard 
             name="Categories" 

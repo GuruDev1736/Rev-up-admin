@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import StatCard from "../components/StatCard";
 import { motion } from "framer-motion";
@@ -10,10 +10,22 @@ import { SalesOverviewChart } from "../components/SalesOverviewChart";
 import { CategoryDistribution } from "../components/CategoryDistribution";
 import { CategoryDistributionChart } from "../components/CategoryDistributionChart";
 import { ProductPerformanceChart } from "../components/ProductPerformanceChart";
+import { MonthlyPaymentChart } from "../components/MonthlyPaymentChart";
+import { MostBookedBikesChart } from "../components/MostBookedBikesChart";
 import AlertCard from "../components/AlertCard";
+import { getAllBookings } from "@/services/api/bookingsService";
+import { getAllBikes } from "@/services/api/bikesService";
 
 const OverviewPage = () => {
   const router = useRouter();
+  const [bookings, setBookings] = useState([]);
+  const [bikes, setBikes] = useState([]);
+  const [stats, setStats] = useState({
+    totalPayment: 0,
+    totalBookings: 0,
+    totalBikes: 0,
+    availableBikes: 0,
+  });
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
@@ -23,8 +35,45 @@ const OverviewPage = () => {
       // Clear session and redirect to login
       sessionStorage.clear();
       router.push("/login");
+    } else {
+      fetchDashboardData();
     }
   }, [router]);
+
+  const fetchDashboardData = async () => {
+    try {
+      const [bookingsResponse, bikesResponse] = await Promise.all([
+        getAllBookings(),
+        getAllBikes(),
+      ]);
+
+      if (bookingsResponse.STS === "200" && bookingsResponse.CONTENT) {
+        setBookings(bookingsResponse.CONTENT);
+        
+        // Calculate total payment (exclude cancelled)
+        const totalPayment = bookingsResponse.CONTENT
+          .filter(b => b.bookingStatus !== "CANCELLED")
+          .reduce((sum, b) => sum + parseFloat(b.totalAmount || b.amount || 0), 0);
+        
+        setStats(prev => ({
+          ...prev,
+          totalPayment,
+          totalBookings: bookingsResponse.CONTENT.length,
+        }));
+      }
+
+      if (bikesResponse.success && bikesResponse.bikes) {
+        setBikes(bikesResponse.bikes);
+        setStats(prev => ({
+          ...prev,
+          totalBikes: bikesResponse.bikes.length,
+          availableBikes: bikesResponse.bikes.filter(b => b.status === "AVAILABLE").length,
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    }
+  };
 
   return (
     <div className="flex-1 overflow-hidden relative z-10">
@@ -35,10 +84,10 @@ const OverviewPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
         >
-          <StatCard name="Total Sales" icon={DollarSign} value=" ₹182,425" bgcolor="bg-[#d8ebff]" color="text-blue-500" />
-          <StatCard name="Total Clients" icon={User} value=" ₹1,425" bgcolor="bg-[#e8ffd8]" color="text-green-500" />
-          <StatCard name="Total Products" icon={ShoppingBag} value="₹672" bgcolor="bg-[#fff5d8]" color="text-orange-500" />
-          <StatCard name="Stock" icon={SquareActivity} value="₹12,825" bgcolor="bg-[#f4d8ff]" color="text-purple-500" />
+          <StatCard name="Total Payment" icon={DollarSign} value={`₹${stats.totalPayment.toFixed(2)}`} bgcolor="bg-[#d8ebff]" color="text-blue-500" />
+          <StatCard name="Total Bookings" icon={User} value={stats.totalBookings} bgcolor="bg-[#e8ffd8]" color="text-green-500" />
+          <StatCard name="Total Bikes" icon={ShoppingBag} value={stats.totalBikes} bgcolor="bg-[#fff5d8]" color="text-orange-500" />
+          <StatCard name="Available Bikes" icon={SquareActivity} value={stats.availableBikes} bgcolor="bg-[#f4d8ff]" color="text-purple-500" />
         </motion.div>
 
         <motion.div
@@ -86,10 +135,8 @@ const OverviewPage = () => {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <SalesOverviewChart />
-          <CategoryDistribution />
-          <CategoryDistributionChart />
-          <ProductPerformanceChart />
+          <MonthlyPaymentChart bookings={bookings} />
+          <MostBookedBikesChart bookings={bookings} bikes={bikes} />
         </div>
       </main>
     </div>

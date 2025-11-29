@@ -17,10 +17,22 @@ const ImportBikesDialog = ({ isOpen, onClose }) => {
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const fileInputRef = useRef(null);
+  const [userRole, setUserRole] = useState("");
+  const [userPlaceId, setUserPlaceId] = useState("");
 
   // Fetch places when dialog opens
   useEffect(() => {
     if (isOpen) {
+      const role = sessionStorage.getItem("userRole");
+      const placeId = sessionStorage.getItem("placeId");
+      setUserRole(role);
+      setUserPlaceId(placeId);
+      
+      // Auto-set placeId for ROLE_ADMIN
+      if (role === "ROLE_ADMIN" && placeId) {
+        setSelectedPlaceId(placeId);
+      }
+      
       fetchPlaces();
     }
   }, [isOpen]);
@@ -236,24 +248,37 @@ const ImportBikesDialog = ({ isOpen, onClose }) => {
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Select Place/Location <span className="text-red-500">*</span>
                       </label>
-                      <select
-                        value={selectedPlaceId}
-                        onChange={(e) => setSelectedPlaceId(e.target.value)}
-                        disabled={loadingPlaces}
-                        className="w-full px-4 py-2 bg-[#2f2f2f] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">
-                          {loadingPlaces ? "Loading places..." : "Select a place"}
-                        </option>
-                        {places.map((place) => (
-                          <option key={place.id} value={place.id}>
-                            {place.name || place.placeName}
-                          </option>
-                        ))}
-                      </select>
-                      <p className="text-xs text-gray-500 mt-1">
-                        All imported bikes will be assigned to this location
-                      </p>
+                      {userRole === "ROLE_ADMIN" ? (
+                        <div className="w-full px-4 py-2 bg-[#2f2f2f] border border-gray-600 rounded-lg text-gray-400">
+                          {places.find(p => p.id.toString() === selectedPlaceId)?.name || 
+                           places.find(p => p.id.toString() === selectedPlaceId)?.placeName || 
+                           "Your Location"}
+                          <p className="text-xs text-gray-500 mt-1">
+                            Bikes will be imported to your assigned location
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <select
+                            value={selectedPlaceId}
+                            onChange={(e) => setSelectedPlaceId(e.target.value)}
+                            disabled={loadingPlaces}
+                            className="w-full px-4 py-2 bg-[#2f2f2f] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">
+                              {loadingPlaces ? "Loading places..." : "Select a place"}
+                            </option>
+                            {places.map((place) => (
+                              <option key={place.id} value={place.id}>
+                                {place.name || place.placeName}
+                              </option>
+                            ))}
+                          </select>
+                          <p className="text-xs text-gray-500 mt-1">
+                            All imported bikes will be assigned to this location
+                          </p>
+                        </>
+                      )}
                     </div>
 
                     <div className="mb-4">

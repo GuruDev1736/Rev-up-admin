@@ -7,6 +7,10 @@ export * from "./bikesService";
 export * from "./placesService";
 export * from "./uploadService";
 export * from "./apiHelpers";
+export * from "./notificationsService";
+export * from "./bookingsService";
+export * from "./usersService";
+export * from "./bannersService";
 
 // API Configuration
 export const API_CONFIG = {

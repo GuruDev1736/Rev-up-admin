@@ -2,19 +2,19 @@
 import React, { useState, useEffect } from "react";
 import { BookingsTable } from "../components/BookingsTable";
 import StatCard from "../components/StatCard";
-import { getAllBookings } from "@/services/api/bookingsService";
-import { FileText, CheckCircle, XCircle, CheckCheck } from "lucide-react";
+import { getAllBookings, getBookingsByPlace } from "@/services/api/bookingsService";
+import { getAllBikes } from "@/services/api/bikesService";
+import { FileText, CheckCircle, XCircle, Bike, DollarSign } from "lucide-react";
 
 const BookingsPage = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    total: 0,
-    pending: 0,
-    confirmed: 0,
-    active: 0,
-    completed: 0,
-    cancelled: 0,
+    totalBikes: 0,
+    totalBookings: 0,
+    activeBookings: 0,
+    cancelledBookings: 0,
+    totalPayment: 0,
   });
 
   const fetchBookings = async () => {
@@ -23,26 +23,54 @@ const BookingsPage = () => {
       const userRole = sessionStorage.getItem("userRole");
       const userPlaceId = sessionStorage.getItem("placeId");
 
-      const response = await getAllBookings();
-      if (response.STS === "200" && response.CONTENT) {
-        let bookings = response.CONTENT;
-        
-        // Filter bookings by placeId for ROLE_ADMIN users
+      let response;
+      // Use place-specific API for ROLE_ADMIN users
+      if (userRole === "ROLE_ADMIN" && userPlaceId) {
+        response = await getBookingsByPlace(userPlaceId);
+      } else {
+        response = await getAllBookings();
+      }
+
+      // Fetch bikes data
+      const bikesResponse = await getAllBikes();
+      let bikesCount = 0;
+      
+      if (bikesResponse.success && bikesResponse.bikes) {
+        // Filter bikes by place for ROLE_ADMIN
         if (userRole === "ROLE_ADMIN" && userPlaceId) {
-          bookings = bookings.filter(booking => booking.place?.id?.toString() === userPlaceId);
+          const filteredBikes = bikesResponse.bikes.filter(bike => {
+            const bikePlaceId = bike.place?.id || bike.placeId || bike.place_id;
+            return bikePlaceId == userPlaceId;
+          });
+          bikesCount = filteredBikes.length;
+        } else {
+          bikesCount = bikesResponse.bikes.length;
         }
-        
-        setBookings(bookings);
+      }
+
+      if (response.STS === "200" && response.CONTENT) {
+        setBookings(response.CONTENT);
         
         // Calculate stats
-        const total = response.CONTENT.length;
-        const pending = response.CONTENT.filter(b => b.bookingStatus === "PENDING").length;
-        const confirmed = response.CONTENT.filter(b => b.bookingStatus === "CONFIRMED").length;
-        const active = response.CONTENT.filter(b => b.bookingStatus === "ACTIVE").length;
-        const completed = response.CONTENT.filter(b => b.bookingStatus === "COMPLETED").length;
-        const cancelled = response.CONTENT.filter(b => b.bookingStatus === "CANCELLED").length;
+        const totalBookings = response.CONTENT.length;
+        const activeBookings = response.CONTENT.filter(b => b.bookingStatus === "ACTIVE").length;
+        const cancelledBookings = response.CONTENT.filter(b => b.bookingStatus === "CANCELLED").length;
         
-        setStats({ total, pending, confirmed, active, completed, cancelled });
+        // Calculate total payment (exclude cancelled bookings)
+        const totalPayment = response.CONTENT
+          .filter(booking => booking.bookingStatus !== "CANCELLED")
+          .reduce((sum, booking) => {
+            const amount = parseFloat(booking.totalAmount || booking.amount || 0);
+            return sum + amount;
+          }, 0);
+        
+        setStats({ 
+          totalBikes: bikesCount,
+          totalBookings, 
+          activeBookings, 
+          cancelledBookings,
+          totalPayment 
+        });
       }
     } catch (error) {
       console.error("Error fetching bookings:", error);
@@ -65,34 +93,41 @@ const BookingsPage = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
           <StatCard
-            name="Total Bookings"
-            value={stats.total}
-            icon={FileText}
+            name="Total Bikes"
+            value={stats.totalBikes}
+            icon={Bike}
             bgcolor="bg-[#d8ebff]"
             color="text-blue-500"
           />
           <StatCard
-            name="Active"
-            value={stats.active}
-            icon={CheckCircle}
+            name="Total Bookings"
+            value={stats.totalBookings}
+            icon={FileText}
             bgcolor="bg-[#e8ffd8]"
             color="text-green-500"
           />
           <StatCard
-            name="Completed"
-            value={stats.completed}
-            icon={CheckCheck}
-            bgcolor="bg-[#f4d8ff]"
-            color="text-purple-500"
+            name="Active Bookings"
+            value={stats.activeBookings}
+            icon={CheckCircle}
+            bgcolor="bg-[#fff4d8]"
+            color="text-yellow-500"
           />
           <StatCard
-            name="Cancelled"
-            value={stats.cancelled}
+            name="Cancelled Bookings"
+            value={stats.cancelledBookings}
             icon={XCircle}
             bgcolor="bg-[#ffd8d8]"
             color="text-red-500"
+          />
+          <StatCard
+            name="Total Payment"
+            value={`₹${stats.totalPayment.toFixed(2)}`}
+            icon={DollarSign}
+            bgcolor="bg-[#f4d8ff]"
+            color="text-purple-500"
           />
         </div>
 

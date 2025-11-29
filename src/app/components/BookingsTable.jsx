@@ -61,6 +61,13 @@ export const BookingsTable = ({ initialBookings, loading, onBookingsUpdate }) =>
       );
     }
 
+    // Sort by date and time - latest first
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.bookingDate || a.createdAt || 0);
+      const dateB = new Date(b.bookingDate || b.createdAt || 0);
+      return dateB - dateA; // Descending order (latest first)
+    });
+
     return filtered;
   }, [bookings, searchQuery, statusFilter]);
 

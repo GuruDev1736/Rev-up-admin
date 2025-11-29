@@ -28,6 +28,31 @@ export const getAllBookings = async () => {
 };
 
 /**
+ * Get bookings by place ID
+ * @param {number} placeId - Place ID
+ * @returns {Promise<Object>} Response with bookings for the place
+ */
+export const getBookingsByPlace = async (placeId) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/bookings/place/${placeId}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.MSG || "Failed to fetch bookings");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching bookings by place:", error.message);
+    throw error;
+  }
+};
+
+/**
  * Get booking by ID
  * @param {number} bookingId - Booking ID
  * @returns {Promise<Object>} Response with booking details

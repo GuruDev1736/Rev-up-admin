@@ -21,7 +21,7 @@ const ProductsTable = () => {
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterBrand, setFilterBrand] = useState("all");
-  const [filterPlace, setFilterPlace] = useState("all");
+  const [userRole, setUserRole] = useState("");
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -43,7 +43,8 @@ const ProductsTable = () => {
       try {
         setLoading(true);
         
-        const userRole = sessionStorage.getItem("userRole");
+        const role = sessionStorage.getItem("userRole");
+        setUserRole(role);
         const userPlaceId = sessionStorage.getItem("placeId");
         
         const [bikesResponse, placesResponse] = await Promise.all([
@@ -55,8 +56,12 @@ const ProductsTable = () => {
           let bikes = bikesResponse.bikes;
           
           // Filter bikes by placeId for ROLE_ADMIN users
-          if (userRole === "ROLE_ADMIN" && userPlaceId) {
-            bikes = bikes.filter(bike => bike.place?.id?.toString() === userPlaceId);
+          if (role === "ROLE_ADMIN" && userPlaceId) {
+            bikes = bikes.filter(bike => {
+              // Check multiple possible place id fields
+              const bikePlaceId = bike.place?.id || bike.placeId || bike.place_id;
+              return bikePlaceId?.toString() === userPlaceId;
+            });
           }
           
           setProducts(bikes);
@@ -135,13 +140,8 @@ const ProductsTable = () => {
       filtered = filtered.filter(p => p.brand === filterBrand);
     }
 
-    // Apply place filter
-    if (filterPlace !== "all") {
-      filtered = filtered.filter(p => p.place?.id?.toString() === filterPlace);
-    }
-
     return filtered;
-  }, [searchTerms, products, filterCategory, filterStatus, filterBrand, filterPlace]);
+  }, [searchTerms, products, filterCategory, filterStatus, filterBrand]);
 
   // Reset all filters
   const resetFilters = () => {
@@ -149,7 +149,6 @@ const ProductsTable = () => {
     setFilterCategory("all");
     setFilterStatus("all");
     setFilterBrand("all");
-    setFilterPlace("all");
     setCurrentPage(1);
   };
 
@@ -162,7 +161,7 @@ const ProductsTable = () => {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerms, filterCategory, filterStatus, filterBrand, filterPlace]);
+  }, [searchTerms, filterCategory, filterStatus, filterBrand]);
 
   // Navigate to edit page
   const handleEditClick = (id) => {
@@ -294,22 +293,8 @@ const ProductsTable = () => {
             </select>
           </div>
 
-          {/* Place Filter */}
-          <div className="w-full md:w-auto">
-            <select
-              value={filterPlace}
-              onChange={(e) => setFilterPlace(e.target.value)}
-              className="bg-[#2f2f2f] text-white rounded-lg px-4 py-2 w-full md:w-48 focus:outline-none focus:ring-2 focus:ring-gray-50 transition duration-200 text-sm"
-            >
-              <option value="all">All Places</option>
-              {places.map(place => (
-                <option key={place.id} value={place.id.toString()}>{place.name}</option>
-              ))}
-            </select>
-          </div>
-
           {/* Clear Filters Button */}
-          {(filterCategory !== "all" || filterBrand !== "all" || filterStatus !== "all" || filterPlace !== "all" || searchTerms) && (
+          {(filterCategory !== "all" || filterBrand !== "all" || filterStatus !== "all" || searchTerms) && (
             <button
               onClick={resetFilters}
               className="bg-gradient-to-r from-[#f02521] to-[#f85d5d] text-white px-4 py-2 rounded-lg hover:shadow-lg transform hover:scale-105 transition duration-200 text-sm font-medium w-full md:w-auto"

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { 
   Bell, 
@@ -14,146 +15,130 @@ import {
   Clock
 } from "lucide-react";
 import StatCard from "../components/StatCard";
+import NotificationCard from "../components/NotificationCard";
+import NotificationDetailsDialog from "../components/NotificationDetailsDialog";
+import { getNotificationsByPlace, markNotificationAsRead } from "@/services/api/notificationsService";
 
 const NotificationsPage = () => {
+  const router = useRouter();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterPriority, setFilterPriority] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     unread: 0,
-    bookings: 0,
-    system: 0,
+    high: 0,
   });
 
-  // Mock data - Replace with actual API call
   useEffect(() => {
-    const fetchNotifications = async () => {
-      setLoading(true);
-      try {
-        // Simulated API call - Replace with actual API
-        const mockData = [
-          {
-            id: 1,
-            type: "booking",
-            title: "New Booking Created",
-            message: "John Doe has created a new booking for Royal Enfield Classic 350",
-            timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-            isRead: false,
-            priority: "high",
-          },
-          {
-            id: 2,
-            type: "payment",
-            title: "Payment Received",
-            message: "Payment of ₹2,100 received for booking #12345",
-            timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-            isRead: false,
-            priority: "medium",
-          },
-          {
-            id: 3,
-            type: "system",
-            title: "System Update",
-            message: "System maintenance scheduled for tonight at 2:00 AM",
-            timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-            isRead: true,
-            priority: "low",
-          },
-          {
-            id: 4,
-            type: "booking",
-            title: "Booking Cancelled",
-            message: "Booking #12344 has been cancelled by the user",
-            timestamp: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
-            isRead: true,
-            priority: "medium",
-          },
-          {
-            id: 5,
-            type: "user",
-            title: "New User Registration",
-            message: "A new user has registered: jane.smith@example.com",
-            timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-            isRead: false,
-            priority: "low",
-          },
-          {
-            id: 6,
-            type: "booking",
-            title: "Booking Completed",
-            message: "Booking #12340 has been marked as completed",
-            timestamp: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
-            isRead: true,
-            priority: "low",
-          },
-          {
-            id: 7,
-            type: "alert",
-            title: "Low Stock Alert",
-            message: "Honda Activa stock is running low at Mumbai location",
-            timestamp: new Date(Date.now() - 1000 * 60 * 240).toISOString(),
-            isRead: false,
-            priority: "high",
-          },
-          {
-            id: 8,
-            type: "payment",
-            title: "Payment Failed",
-            message: "Payment failed for booking #12346. User notified.",
-            timestamp: new Date(Date.now() - 1000 * 60 * 300).toISOString(),
-            isRead: true,
-            priority: "high",
-          },
-        ];
-
-        setNotifications(mockData);
-        
-        // Calculate stats
-        const total = mockData.length;
-        const unread = mockData.filter(n => !n.isRead).length;
-        const bookings = mockData.filter(n => n.type === "booking").length;
-        const system = mockData.filter(n => n.type === "system").length;
-        
-        setStats({ total, unread, bookings, system });
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    const token = sessionStorage.getItem("token");
+    if (!token) {
+      sessionStorage.clear();
+      router.push("/login");
+      return;
+    }
     fetchNotifications();
-  }, []);
+  }, [router]);
+
+  const fetchNotifications = async () => {
+    setLoading(true);
+    try {
+      const userRole = sessionStorage.getItem("userRole");
+      const userPlaceId = sessionStorage.getItem("placeId");
+
+      if (userRole === "ROLE_ADMIN" && userPlaceId) {
+        const response = await getNotificationsByPlace(userPlaceId);
+        if (response.STS === "200" && response.CONTENT) {
+          // Sort notifications by createdAt date (latest first)
+          const sortedNotifications = [...response.CONTENT].sort((a, b) => {
+            const dateA = Array.isArray(a.createdAt) 
+              ? new Date(a.createdAt[0], a.createdAt[1] - 1, a.createdAt[2]).getTime()
+              : new Date(a.createdAt).getTime();
+            const dateB = Array.isArray(b.createdAt)
+              ? new Date(b.createdAt[0], b.createdAt[1] - 1, b.createdAt[2]).getTime()
+              : new Date(b.createdAt).getTime();
+            return dateB - dateA; // Descending order (latest first)
+          });
+          setNotifications(sortedNotifications);
+          
+          // Calculate stats
+          const total = response.CONTENT.length;
+          const unread = response.CONTENT.filter(n => n.status?.toUpperCase() === "UNREAD").length;
+          const high = response.CONTENT.filter(n => 
+            n.priority?.toUpperCase() === "HIGH" || n.priority?.toUpperCase() === "CRITICAL"
+          ).length;
+          
+          setStats({ total, unread, high });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter notifications
   const filteredNotifications = notifications.filter((notification) => {
-    const matchesType = filterType === "all" || notification.type === filterType;
     const matchesStatus = 
       filterStatus === "all" || 
-      (filterStatus === "read" && notification.isRead) ||
-      (filterStatus === "unread" && !notification.isRead);
+      (filterStatus === "read" && notification.status?.toUpperCase() === "READ") ||
+      (filterStatus === "unread" && notification.status?.toUpperCase() === "UNREAD");
+    const matchesPriority = 
+      filterPriority === "all" || 
+      notification.priority?.toLowerCase() === filterPriority.toLowerCase();
     const matchesSearch = 
-      notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      notification.message.toLowerCase().includes(searchTerm.toLowerCase());
+      notification.notificationTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      notification.notificationDescription?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    return matchesType && matchesStatus && matchesSearch;
+    return matchesStatus && matchesPriority && matchesSearch;
   });
 
   // Mark as read
-  const markAsRead = (id) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, isRead: true } : n)
-    );
-    setStats(prev => ({ ...prev, unread: prev.unread - 1 }));
+  const markAsRead = async (id) => {
+    try {
+      const response = await markNotificationAsRead(id, true);
+      if (response.STS === "200") {
+        setNotifications(prev => 
+          prev.map(n => n.id === id ? { ...n, status: "READ" } : n)
+        );
+        setStats(prev => ({ ...prev, unread: Math.max(0, prev.unread - 1) }));
+      }
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+  };
+
+  // Handle notification click
+  const handleNotificationClick = async (notification) => {
+    setSelectedNotification(notification);
+    setShowDetailsDialog(true);
+    
+    // Mark as read if it's unread
+    if (notification.status?.toUpperCase() === "UNREAD") {
+      await markAsRead(notification.id);
+    }
   };
 
   // Mark all as read
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-    setStats(prev => ({ ...prev, unread: 0 }));
+  const markAllAsRead = async () => {
+    try {
+      const unreadNotifications = notifications.filter(n => n.status?.toUpperCase() === "UNREAD");
+      
+      // Call API for each unread notification
+      await Promise.all(
+        unreadNotifications.map(n => markNotificationAsRead(n.id, true))
+      );
+      
+      setNotifications(prev => prev.map(n => ({ ...n, status: "READ" })));
+      setStats(prev => ({ ...prev, unread: 0 }));
+    } catch (error) {
+      console.error("Error marking all as read:", error);
+    }
   };
 
   // Delete notification
@@ -163,55 +148,28 @@ const NotificationsPage = () => {
     setStats(prev => ({
       ...prev,
       total: prev.total - 1,
-      unread: notification.isRead ? prev.unread : prev.unread - 1,
+      unread: notification?.status?.toUpperCase() === "UNREAD" ? Math.max(0, prev.unread - 1) : prev.unread,
     }));
   };
 
   // Get time ago
   const getTimeAgo = (timestamp) => {
-    const now = new Date();
-    const time = new Date(timestamp);
-    const diffMs = now - time;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    if (!timestamp) return "";
+    try {
+      const now = new Date();
+      const time = new Date(timestamp);
+      const diffMs = now - time;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
-  };
-
-  // Get notification icon
-  const getNotificationIcon = (type, priority) => {
-    switch (type) {
-      case "booking":
-        return <Bell className={priority === "high" ? "text-red-500" : "text-blue-500"} size={20} />;
-      case "payment":
-        return <CheckCircle className="text-green-500" size={20} />;
-      case "alert":
-        return <AlertCircle className="text-orange-500" size={20} />;
-      case "system":
-        return <Info className="text-gray-500" size={20} />;
-      case "user":
-        return <Bell className="text-purple-500" size={20} />;
-      default:
-        return <Bell className="text-gray-500" size={20} />;
+      if (diffMins < 1) return "Just now";
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      return `${diffDays}d ago`;
+    } catch (error) {
+      return timestamp;
     }
-  };
-
-  // Get priority badge
-  const getPriorityBadge = (priority) => {
-    const colors = {
-      high: "bg-red-100 text-red-700",
-      medium: "bg-yellow-100 text-yellow-700",
-      low: "bg-gray-100 text-gray-700",
-    };
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[priority]}`}>
-        {priority.charAt(0).toUpperCase() + priority.slice(1)}
-      </span>
-    );
   };
 
   return (
@@ -244,7 +202,7 @@ const NotificationsPage = () => {
         </motion.div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           <StatCard
             name="Total Notifications"
             value={stats.total}
@@ -260,18 +218,11 @@ const NotificationsPage = () => {
             color="text-red-500"
           />
           <StatCard
-            name="Booking Related"
-            value={stats.bookings}
-            icon={CheckCircle}
-            bgcolor="bg-[#e8ffd8]"
-            color="text-green-500"
-          />
-          <StatCard
-            name="System Updates"
-            value={stats.system}
-            icon={Info}
-            bgcolor="bg-[#f4d8ff]"
-            color="text-purple-500"
+            name="High Priority"
+            value={stats.high}
+            icon={AlertCircle}
+            bgcolor="bg-[#fff5d8]"
+            color="text-orange-500"
           />
         </div>
 
@@ -295,18 +246,16 @@ const NotificationsPage = () => {
               <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
             </div>
 
-            {/* Type Filter */}
+            {/* Priority Filter */}
             <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
+              value={filterPriority}
+              onChange={(e) => setFilterPriority(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f02521] text-gray-900 w-full md:w-auto"
             >
-              <option value="all">All Types</option>
-              <option value="booking">Bookings</option>
-              <option value="payment">Payments</option>
-              <option value="user">Users</option>
-              <option value="system">System</option>
-              <option value="alert">Alerts</option>
+              <option value="all">All Priority</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
             </select>
 
             {/* Status Filter */}
@@ -327,7 +276,7 @@ const NotificationsPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-white rounded-xl shadow-lg border border-gray-200"
+          className="bg-white rounded-xl shadow-lg border border-gray-200 p-6"
         >
           {loading ? (
             <div className="text-center py-12">
@@ -340,72 +289,13 @@ const NotificationsPage = () => {
               <p className="text-gray-600">No notifications found</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
-              {filteredNotifications.map((notification, index) => (
-                <motion.div
+            <div className="space-y-3">
+              {filteredNotifications.map((notification) => (
+                <NotificationCard
                   key={notification.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className={`p-4 md:p-6 hover:bg-gray-50 transition cursor-pointer ${
-                    !notification.isRead ? "bg-blue-50/50" : ""
-                  }`}
-                >
-                  <div className="flex items-start gap-4">
-                    {/* Icon */}
-                    <div className="flex-shrink-0 mt-1">
-                      {getNotificationIcon(notification.type, notification.priority)}
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className={`text-sm md:text-base font-semibold ${
-                              !notification.isRead ? "text-gray-900" : "text-gray-600"
-                            }`}>
-                              {notification.title}
-                            </h3>
-                            {!notification.isRead && (
-                              <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></span>
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-600 mb-2">
-                            {notification.message}
-                          </p>
-                          <div className="flex items-center gap-3 flex-wrap">
-                            <div className="flex items-center gap-1 text-xs text-gray-500">
-                              <Clock size={14} />
-                              {getTimeAgo(notification.timestamp)}
-                            </div>
-                            {getPriorityBadge(notification.priority)}
-                          </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          {!notification.isRead && (
-                            <button
-                              onClick={() => markAsRead(notification.id)}
-                              className="p-2 text-gray-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition"
-                              title="Mark as read"
-                            >
-                              <Check size={18} />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => deleteNotification(notification.id)}
-                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
-                            title="Delete"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
+                  notification={notification}
+                  onClick={handleNotificationClick}
+                />
               ))}
             </div>
           )}
@@ -424,6 +314,16 @@ const NotificationsPage = () => {
           </motion.div>
         )}
       </div>
+
+      {/* Notification Details Dialog */}
+      <NotificationDetailsDialog
+        isOpen={showDetailsDialog}
+        onClose={() => {
+          setShowDetailsDialog(false);
+          setSelectedNotification(null);
+        }}
+        notification={selectedNotification}
+      />
     </div>
   );
 };

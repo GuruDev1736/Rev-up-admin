@@ -22,6 +22,7 @@ const BikePage = () => {
   const [imageOption, setImageOption] = useState("url"); // "url" or "upload"
   const [uploadedImage, setUploadedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
+  const [userRole, setUserRole] = useState("");
 
   const [formData, setFormData] = useState({
     bikeName: "",
@@ -46,12 +47,26 @@ const BikePage = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        const role = sessionStorage.getItem("userRole");
+        const userPlaceId = sessionStorage.getItem("placeId");
+        setUserRole(role);
         
         // For add mode, only fetch places
         if (isAddMode) {
-          const placesResponse = await getAllPlaces();
-          if (placesResponse.STS === "200" && placesResponse.CONTENT) {
-            setPlaces(placesResponse.CONTENT);
+          // For ROLE_ADMIN, auto-set their placeId and don't show place selection
+          if (role === "ROLE_ADMIN" && userPlaceId) {
+            const placesResponse = await getAllPlaces();
+            if (placesResponse.STS === "200" && placesResponse.CONTENT) {
+              setPlaces(placesResponse.CONTENT);
+            }
+            // Auto-set the placeId for admin
+            setFormData(prev => ({ ...prev, placeId: userPlaceId }));
+          } else {
+            // For ROLE_MASTER_ADMIN, fetch all places
+            const placesResponse = await getAllPlaces();
+            if (placesResponse.STS === "200" && placesResponse.CONTENT) {
+              setPlaces(placesResponse.CONTENT);
+            }
           }
           setLoading(false);
           return;
@@ -616,20 +631,29 @@ const BikePage = () => {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Location/Place <span className="text-red-500">*</span>
             </label>
-            <select
-              name="placeId"
-              value={formData.placeId}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 bg-[#2f2f2f] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#f02521]"
-            >
-              <option value="">Select Location</option>
-              {places.map((place) => (
-                <option key={place.id} value={place.id}>
-                  {place.name || place.placeName}
-                </option>
-              ))}
-            </select>
+            {userRole === "ROLE_ADMIN" ? (
+              <div className="w-full px-4 py-2 bg-[#2f2f2f] border border-gray-600 rounded-lg text-gray-400">
+                {places.find(p => p.id.toString() === formData.placeId)?.name || 
+                 places.find(p => p.id.toString() === formData.placeId)?.placeName || 
+                 "Your Location"}
+                <p className="text-xs text-gray-500 mt-1">You can only add bikes to your assigned location</p>
+              </div>
+            ) : (
+              <select
+                name="placeId"
+                value={formData.placeId}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 bg-[#2f2f2f] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#f02521]"
+              >
+                <option value="">Select Location</option>
+                {places.map((place) => (
+                  <option key={place.id} value={place.id}>
+                    {place.name || place.placeName}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           {/* Submit Button */}
