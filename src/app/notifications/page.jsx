@@ -17,7 +17,7 @@ import {
 import StatCard from "../components/StatCard";
 import NotificationCard from "../components/NotificationCard";
 import NotificationDetailsDialog from "../components/NotificationDetailsDialog";
-import { getNotificationsByPlace, markNotificationAsRead } from "@/services/api/notificationsService";
+import { getNotificationsByPlace, markNotificationAsRead, getAllNotifications } from "@/services/api/notificationsService";
 
 const NotificationsPage = () => {
   const router = useRouter();
@@ -50,20 +50,26 @@ const NotificationsPage = () => {
       const userRole = sessionStorage.getItem("userRole");
       const userPlaceId = sessionStorage.getItem("placeId");
 
-      if (userRole === "ROLE_ADMIN" && userPlaceId) {
-        const response = await getNotificationsByPlace(userPlaceId);
-        if (response.STS === "200" && response.CONTENT) {
-          // Sort notifications by createdAt date (latest first)
-          const sortedNotifications = [...response.CONTENT].sort((a, b) => {
-            const dateA = Array.isArray(a.createdAt) 
-              ? new Date(a.createdAt[0], a.createdAt[1] - 1, a.createdAt[2]).getTime()
-              : new Date(a.createdAt).getTime();
-            const dateB = Array.isArray(b.createdAt)
-              ? new Date(b.createdAt[0], b.createdAt[1] - 1, b.createdAt[2]).getTime()
-              : new Date(b.createdAt).getTime();
-            return dateB - dateA; // Descending order (latest first)
-          });
-          setNotifications(sortedNotifications);
+      let response;
+      // Fetch all notifications for MASTER_ADMIN, place-specific for ADMIN
+      if (userRole === "ROLE_MASTER_ADMIN") {
+        response = await getAllNotifications();
+      } else if (userRole === "ROLE_ADMIN" && userPlaceId) {
+        response = await getNotificationsByPlace(userPlaceId);
+      }
+
+      if (response && response.STS === "200" && response.CONTENT) {
+        // Sort notifications by createdAt date (latest first)
+        const sortedNotifications = [...response.CONTENT].sort((a, b) => {
+          const dateA = Array.isArray(a.createdAt) 
+            ? new Date(a.createdAt[0], a.createdAt[1] - 1, a.createdAt[2]).getTime()
+            : new Date(a.createdAt).getTime();
+          const dateB = Array.isArray(b.createdAt)
+            ? new Date(b.createdAt[0], b.createdAt[1] - 1, b.createdAt[2]).getTime()
+            : new Date(b.createdAt).getTime();
+          return dateB - dateA; // Descending order (latest first)
+        });
+        setNotifications(sortedNotifications);
           
           // Calculate stats
           const total = response.CONTENT.length;
@@ -72,17 +78,15 @@ const NotificationsPage = () => {
             n.priority?.toUpperCase() === "HIGH" || n.priority?.toUpperCase() === "CRITICAL"
           ).length;
           
-          setStats({ total, unread, high });
-        }
+        
+        setStats({ total, unread, high });
       }
     } catch (error) {
       console.error("Error fetching notifications:", error);
     } finally {
       setLoading(false);
     }
-  };
-
-  // Filter notifications
+  };  // Filter notifications
   const filteredNotifications = notifications.filter((notification) => {
     const matchesStatus = 
       filterStatus === "all" || 

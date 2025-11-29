@@ -93,13 +93,9 @@ export const deletePlace = async (placeId) => {
  */
 export const togglePlaceStatus = async (placeId, status) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/places/status/${placeId}`, {
+    const response = await fetch(`${API_BASE_URL}/places/status/${placeId}?status=${status}`, {
       method: "PUT",
-      headers: {
-        ...getAuthHeaders(),
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ status }),
+      headers: getAuthHeaders(),
     });
 
     const data = await response.json();

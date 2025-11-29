@@ -28,6 +28,29 @@ export const getNotificationsByPlace = async (placeId) => {
 };
 
 /**
+ * Get all notifications
+ * @returns {Promise<Object>} Response with all notifications data
+ */
+export const getAllNotifications = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/notifications/all`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching all notifications:", error);
+    return {
+      STS: "500",
+      MSG: error.message || "An error occurred while fetching notifications",
+      CONTENT: [],
+    };
+  }
+};
+
+/**
  * Mark notification as read
  * @param {number} notificationId - The ID of the notification
  * @param {boolean} isRead - Whether the notification should be marked as read (true) or unread (false)

@@ -12,14 +12,20 @@ import { CategoryDistributionChart } from "../components/CategoryDistributionCha
 import { ProductPerformanceChart } from "../components/ProductPerformanceChart";
 import { MonthlyPaymentChart } from "../components/MonthlyPaymentChart";
 import { MostBookedBikesChart } from "../components/MostBookedBikesChart";
+import NotificationCard from "../components/NotificationCard";
+import NotificationDetailsDialog from "../components/NotificationDetailsDialog";
 import AlertCard from "../components/AlertCard";
 import { getAllBookings } from "@/services/api/bookingsService";
 import { getAllBikes } from "@/services/api/bikesService";
+import { getAllNotifications, markNotificationAsRead } from "@/services/api/notificationsService";
 
 const OverviewPage = () => {
   const router = useRouter();
   const [bookings, setBookings] = useState([]);
   const [bikes, setBikes] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [stats, setStats] = useState({
     totalPayment: 0,
     totalBookings: 0,
@@ -42,9 +48,10 @@ const OverviewPage = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [bookingsResponse, bikesResponse] = await Promise.all([
+      const [bookingsResponse, bikesResponse, notificationsResponse] = await Promise.all([
         getAllBookings(),
         getAllBikes(),
+        getAllNotifications(),
       ]);
 
       if (bookingsResponse.STS === "200" && bookingsResponse.CONTENT) {
@@ -70,8 +77,41 @@ const OverviewPage = () => {
           availableBikes: bikesResponse.bikes.filter(b => b.status === "AVAILABLE").length,
         }));
       }
+
+      if (notificationsResponse.STS === "200" && notificationsResponse.CONTENT) {
+        // Sort notifications by createdAt date (latest first)
+        const sortedNotifications = [...notificationsResponse.CONTENT].sort((a, b) => {
+          const dateA = Array.isArray(a.createdAt) 
+            ? new Date(a.createdAt[0], a.createdAt[1] - 1, a.createdAt[2]).getTime()
+            : new Date(a.createdAt).getTime();
+          const dateB = Array.isArray(b.createdAt)
+            ? new Date(b.createdAt[0], b.createdAt[1] - 1, b.createdAt[2]).getTime()
+            : new Date(b.createdAt).getTime();
+          return dateB - dateA; // Descending order (latest first)
+        });
+        setNotifications(sortedNotifications);
+      }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
+    }
+  };
+
+  const handleNotificationClick = async (notification) => {
+    setSelectedNotification(notification);
+    setShowDetailsDialog(true);
+    
+    // Only mark as read if it's currently unread
+    if (notification.status?.toUpperCase() === "UNREAD") {
+      try {
+        const response = await markNotificationAsRead(notification.id, true);
+        if (response.STS === "200") {
+          setNotifications(prev => 
+            prev.map(n => n.id === notification.id ? { ...n, status: "READ" } : n)
+          );
+        }
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
+      }
     }
   };
 
@@ -91,47 +131,38 @@ const OverviewPage = () => {
         </motion.div>
 
         <motion.div
-          className="flex-grid max-w-7xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8 min-w-0 shadow-lg rounded-xl bg-white"
+          className="flex-grid max-w-7xl mb-8 min-w-0"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
         >
-          <div className="mt-8 p-6 ">
-            <div className="max-w-7xl mx-auto flex items-center justify-between pb-4 mb-6">
-              <h2 className="text-xl sm:text-3xl lg:text-3xl font-semibold text-gray-800">
-                Alerts
-              </h2>
+          {/* Notifications Section */}
+          {notifications.length > 0 && (
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Recent Notifications
+                </h2>
+                {notifications.length > 5 && (
+                  <button 
+                    onClick={() => router.push("/notifications")}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    View all
+                  </button>
+                )}
+              </div>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {notifications.slice(0, 5).map((notification) => (
+                  <NotificationCard
+                    key={notification.id}
+                    notification={notification}
+                    onClick={handleNotificationClick}
+                  />
+                ))}  
+              </div>
             </div>
-
-            <div className="flex flex-col gap-4 p-4 sm:px-6">
-              <AlertCard
-                title="Overdue Rental Alert"
-                message="Mountain Bike Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima, hic?"
-                time="1h ago"
-                bgcolor="bg-red-500"
-                border="bg-red-50"
-                borderc="border-red-300"
-              />
-
-              <AlertCard
-                title="Maintainance Required"
-                message="Mountain Bike Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima, hic?"
-                time="1h ago"
-                bgcolor="bg-amber-500"
-                border="bg-amber-50"
-                borderc="border-amber-300"
-              />
-
-              <AlertCard
-                title="Low Bike Available"
-                message="Mountain Bike Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima, hic?"
-                time="1h ago"
-                bgcolor="bg-red-500"
-                border="bg-red-50"
-                borderc="border-red-300"
-              />
-            </div>
-          </div>
+          )}
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -139,6 +170,16 @@ const OverviewPage = () => {
           <MostBookedBikesChart bookings={bookings} bikes={bikes} />
         </div>
       </main>
+
+      {/* Notification Details Dialog */}
+      <NotificationDetailsDialog
+        isOpen={showDetailsDialog}
+        onClose={() => {
+          setShowDetailsDialog(false);
+          setSelectedNotification(null);
+        }}
+        notification={selectedNotification}
+      />
     </div>
   );
 };

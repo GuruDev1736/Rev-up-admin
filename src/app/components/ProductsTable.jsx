@@ -21,6 +21,7 @@ const ProductsTable = () => {
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterBrand, setFilterBrand] = useState("all");
+  const [filterPlace, setFilterPlace] = useState("all");
   const [userRole, setUserRole] = useState("");
 
   // Pagination states
@@ -140,8 +141,16 @@ const ProductsTable = () => {
       filtered = filtered.filter(p => p.brand === filterBrand);
     }
 
+    // Apply place filter (only for MASTER_ADMIN)
+    if (filterPlace !== "all") {
+      filtered = filtered.filter(p => {
+        const bikePlaceId = p.place?.id || p.placeId || p.place_id;
+        return bikePlaceId?.toString() === filterPlace;
+      });
+    }
+
     return filtered;
-  }, [searchTerms, products, filterCategory, filterStatus, filterBrand]);
+  }, [searchTerms, products, filterCategory, filterStatus, filterBrand, filterPlace]);
 
   // Reset all filters
   const resetFilters = () => {
@@ -149,6 +158,7 @@ const ProductsTable = () => {
     setFilterCategory("all");
     setFilterStatus("all");
     setFilterBrand("all");
+    setFilterPlace("all");
     setCurrentPage(1);
   };
 
@@ -161,7 +171,7 @@ const ProductsTable = () => {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerms, filterCategory, filterStatus, filterBrand]);
+  }, [searchTerms, filterCategory, filterStatus, filterBrand, filterPlace]);
 
   // Navigate to edit page
   const handleEditClick = (id) => {
@@ -293,8 +303,24 @@ const ProductsTable = () => {
             </select>
           </div>
 
+          {/* Place Filter - Only for MASTER_ADMIN */}
+          {userRole === "ROLE_MASTER_ADMIN" && (
+            <div className="w-full md:w-auto">
+              <select
+                value={filterPlace}
+                onChange={(e) => setFilterPlace(e.target.value)}
+                className="bg-[#2f2f2f] text-white rounded-lg px-4 py-2 w-full md:w-48 focus:outline-none focus:ring-2 focus:ring-gray-50 transition duration-200 text-sm"
+              >
+                <option value="all">All Places</option>
+                {places.map(place => (
+                  <option key={place.id} value={place.id.toString()}>{place.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Clear Filters Button */}
-          {(filterCategory !== "all" || filterBrand !== "all" || filterStatus !== "all" || searchTerms) && (
+          {(filterCategory !== "all" || filterBrand !== "all" || filterStatus !== "all" || filterPlace !== "all" || searchTerms) && (
             <button
               onClick={resetFilters}
               className="bg-gradient-to-r from-[#f02521] to-[#f85d5d] text-white px-4 py-2 rounded-lg hover:shadow-lg transform hover:scale-105 transition duration-200 text-sm font-medium w-full md:w-auto"

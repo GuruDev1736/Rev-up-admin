@@ -1,11 +1,9 @@
 {
   "sidebarItems": [
     { "name": "Dashboard", "icon": "House", "href": "/overview" },
-    { "name": "Payments", "icon": "CreditCard", "href": "/payments" },
     { "name": "Manage Bikes", "icon": "Bike", "href": "/products" },
     { "name": "Manage Places", "icon": "MapPin", "href": "/places" },
     { "name": "Manage Banners", "icon": "Image", "href": "/banners" },
-    { "name": "Reports", "icon": "ChartColumnBig", "href": "/reports" },
     { "name": "Users", "icon": "Users", "href": "/users" },
     { "name": "Manage Admin", "icon": "Settings", "href": "/admin" },
     { "name": "Bookings", "icon": "FileText", "href": "/bookings" },

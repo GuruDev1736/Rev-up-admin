@@ -74,13 +74,14 @@ export default function PlacesTable({ initialPlaces, loading, onPlacesUpdate }) 
   };
 
   const getPlaceEnabled = (place) => {
-    // Normalize various possible fields that may represent enabled state
+    // Use isActive field from API response
     if (!place) return true;
-    if (typeof place.status === "boolean") return place.status;
     if (typeof place.isActive === "boolean") return place.isActive;
+    // Fallback to other possible fields
+    if (typeof place.status === "boolean") return place.status;
     if (typeof place.enabled === "boolean") return place.enabled;
     if (typeof place.active === "boolean") return place.active;
-    // sometimes status may be string like "ACTIVE"/"INACTIVE"
+    // Handle string status values
     if (typeof place.status === "string") {
       return place.status.toLowerCase() === "active" || place.status.toLowerCase() === "enabled";
     }
@@ -263,6 +264,9 @@ export default function PlacesTable({ initialPlaces, loading, onPlacesUpdate }) 
                   Created At
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -271,7 +275,7 @@ export default function PlacesTable({ initialPlaces, loading, onPlacesUpdate }) 
               <AnimatePresence>
                 {currentPlaces.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-12 text-center">
+                    <td colSpan="7" className="px-6 py-12 text-center">
                       <MapPin className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                       <p className="text-gray-500 text-lg">No places found</p>
                     </td>
@@ -317,6 +321,23 @@ export default function PlacesTable({ initialPlaces, loading, onPlacesUpdate }) 
                         </div>
                       </td>
                       <td className="px-6 py-4">
+                        <button
+                          onClick={() => handleToggleClick(place)}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                            getPlaceEnabled(place)
+                              ? "bg-green-500 focus:ring-green-500"
+                              : "bg-gray-300 focus:ring-gray-400"
+                          }`}
+                          title={getPlaceEnabled(place) ? "Enabled - Click to disable" : "Disabled - Click to enable"}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              getPlaceEnabled(place) ? "translate-x-6" : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </td>
+                      <td className="px-6 py-4">
                         <div className="flex gap-2">
                           <motion.button
                             whileHover={{ scale: 1.1 }}
@@ -335,19 +356,6 @@ export default function PlacesTable({ initialPlaces, loading, onPlacesUpdate }) 
                             title="Delete"
                           >
                             <Trash2 size={18} />
-                          </motion.button>
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => handleToggleClick(place)}
-                            className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
-                            title={getPlaceEnabled(place) ? "Disable" : "Enable"}
-                          >
-                            {getPlaceEnabled(place) ? (
-                              <span className="text-sm font-medium">Disable</span>
-                            ) : (
-                              <span className="text-sm font-medium">Enable</span>
-                            )}
                           </motion.button>
                         </div>
                       </td>

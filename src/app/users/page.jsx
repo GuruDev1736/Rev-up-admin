@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { UserIcon } from "lucide-react";
-import StatCard from "../components/StatCard";
 import { UsersTable } from "../components/UsersTable";
 import { getAllUsers } from "@/services/api/usersService";
 
@@ -49,26 +47,11 @@ const Userspage = () => {
           </div>
         </motion.div>
 
-        {/* Statistics */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-        >
-          <StatCard
-            title="Total Users"
-            value={users.length}
-            icon={UserIcon}
-            color="from-blue-500 to-blue-600"
-          />
-        </motion.div>
-
         {/* Users Table */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.1 }}
         >
           <UsersTable 
             initialUsers={users} 
