@@ -30,6 +30,7 @@ const BikePage = () => {
     brand: "",
     bikeImage: "",
     description: "",
+    pricePerHour: "",
     pricePerDay: "",
     pricePerWeek: "",
     pricePerMonth: "",
@@ -94,6 +95,7 @@ const BikePage = () => {
               brand: bike.brand || "",
               bikeImage: bike.bikeImage || "",
               description: bike.description || "",
+              pricePerHour: bike.pricePerHour || "",
               pricePerDay: bike.pricePerDay || "",
               pricePerWeek: bike.pricePerWeek || "",
               pricePerMonth: bike.pricePerMonth || "",
@@ -213,6 +215,7 @@ const BikePage = () => {
         brand: formData.brand,
         bikeImage: bikeImageUrl,
         description: formData.description,
+        pricePerHour: parseFloat(formData.pricePerHour),
         pricePerDay: parseFloat(formData.pricePerDay),
         pricePerWeek: parseFloat(formData.pricePerWeek),
         pricePerMonth: parseFloat(formData.pricePerMonth),
@@ -482,6 +485,23 @@ const BikePage = () => {
 
           {/* Pricing */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Price Per Hour (₹) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="pricePerHour"
+                value={formData.pricePerHour}
+                onChange={handleChange}
+                required
+                step="0.01"
+                min="0"
+                className="w-full px-4 py-2 bg-[#2f2f2f] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#f02521]"
+                placeholder="e.g., 50"
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Price Per Day (₹) <span className="text-red-500">*</span>
