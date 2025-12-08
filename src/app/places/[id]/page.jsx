@@ -102,11 +102,11 @@ export default function PlaceFormPage() {
       // Upload image if file is selected
       if (imageFile && imageOption === "upload" && fileName) {
         const uploadResponse = await uploadImage(imageFile, fileName);
-        if (uploadResponse.STS === "200" && uploadResponse.CONTENT) {
-          imageUrl = uploadResponse.CONTENT;
+        if (uploadResponse.success && uploadResponse.imageUrl) {
+          imageUrl = uploadResponse.imageUrl;
         } else {
           setMessageType("error");
-          setMessageText(uploadResponse.MSG || "Failed to upload image");
+          setMessageText(uploadResponse.message || "Failed to upload image");
           setShowMessageDialog(true);
           setLoading(false);
           return;
