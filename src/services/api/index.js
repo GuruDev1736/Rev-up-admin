@@ -11,6 +11,7 @@ export * from "./notificationsService";
 export * from "./bookingsService";
 export * from "./usersService";
 export * from "./bannersService";
+export * from "./couponsService";
 
 // API Configuration
 export const API_CONFIG = {

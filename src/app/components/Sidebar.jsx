@@ -16,6 +16,7 @@ import {
   X,
   MapPin,
   Image,
+  Ticket,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -35,6 +36,7 @@ import { useEffect, useState } from "react";
     BadgeQuestionMark,
     MapPin,
     Image,
+    Ticket,
   };const Sidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarItems, setSidebarItems] = useState([]);
@@ -53,9 +55,9 @@ import { useEffect, useState } from "react";
         
         // Filter items based on user role
         if (role === "ROLE_ADMIN") {
-          // For regular admins, show Dashboard, Bookings, Manage Bikes, and Notifications
+          // For regular admins, show Dashboard, Bookings, Manage Bikes, Manage Coupons, and Notifications
           items = data.sidebarItems.filter(item => 
-            item.name === "Dashboard" || item.name === "Bookings" || item.name === "Manage Bikes" || item.name === "Notifications"
+            item.name === "Dashboard" || item.name === "Bookings" || item.name === "Manage Bikes" || item.name === "Manage Coupons" || item.name === "Notifications"
           );
           // Update Dashboard href for ROLE_ADMIN
           items = items.map(item => {
