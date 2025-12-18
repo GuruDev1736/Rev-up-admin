@@ -56,11 +56,6 @@ const UpdateBookingDialog = ({ isOpen, onClose, booking, onSuccess }) => {
       actions.push({ value: "refund", label: "Process Refund", color: "purple" });
     }
 
-    // Update dates available for PENDING, CONFIRMED, and ACTIVE (not CANCELLED or COMPLETED)
-    if (status === "PENDING" || status === "CONFIRMED" || status === "ACTIVE") {
-      actions.push({ value: "update_dates", label: "Update Dates/Times", color: "orange" });
-    }
-
     return actions;
   };
 

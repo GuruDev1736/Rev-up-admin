@@ -8,6 +8,7 @@
     { "name": "Users", "icon": "Users", "href": "/users" },
     { "name": "Manage Admin", "icon": "Settings", "href": "/admin" },
     { "name": "Bookings", "icon": "FileText", "href": "/bookings" },
+    { "name": "Bike Requests", "icon": "BadgeQuestionMark", "href": "/bike-requests" },
     { "name": "Notifications", "icon": "Bell", "href": "/notifications" }
   ],
    
